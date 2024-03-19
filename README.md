@@ -1,5 +1,5 @@
 # Features
-Distributed Training: Leverage multiple computing nodes to parallelize the training process, significantly reducing training time.
+D-PSGD :
 Support for Popular Datasets: Includes ready-to-use examples for MNIST and CIFAR-10 datasets.
 Flexible Architecture: Easily extendible to incorporate other deep learning models and datasets.
 Custom Training Loop: Implements a custom training loop to provide granular control over the training process and to facilitate the integration of P-PSGD.
