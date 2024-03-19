@@ -1,0 +1,34 @@
+import networkx as nx
+
+def create_overlay_network(underlay, overlay_nodes):
+    # Create an empty graph
+    overlay = nx.Graph()
+
+    # Add nodes to overlay, ensuring they are also in underlay
+    for node in overlay_nodes:
+        if node in underlay:
+            overlay.add_node(node)
+
+    # Add overlay edges
+    # Overlay edges should map to paths in the underlay network
+    overlay.add_edge(0, 2)  # This represents an overlay link
+    # ... more overlay links based on your design
+
+    return overlay
+
+def create_fully_connected_overlay_network(underlay, overlay_nodes):
+    # Create an empty graph for the overlay network
+    overlay = nx.Graph()
+
+    # Add nodes to overlay, ensuring they are also in underlay
+    for node in overlay_nodes:
+        if node in underlay:
+            overlay.add_node(node)
+
+    # Initialize as a fully connected network
+    for i in range(len(overlay_nodes)):
+        for j in range(i + 1, len(overlay_nodes)):
+            overlay.add_edge(overlay_nodes[i], overlay_nodes[j])
+
+    # At this stage, all overlay links are potential and need to be activated based on the design algorithm
+    return overlay
