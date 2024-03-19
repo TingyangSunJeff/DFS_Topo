@@ -54,7 +54,7 @@ def create_model():
     ])
     return model
 
-def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, epochs=20, batch_size=64):
+def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, epochs=80, batch_size=64):
     # Initialize models and optimizers for each agent
     num_agents = len(OVERLAY_NODES)
     agents_models = [create_model() for _ in range(num_agents)]
