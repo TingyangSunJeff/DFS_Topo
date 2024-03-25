@@ -1,4 +1,4 @@
 # network/__init__.py
-from .underlay import create_underlay_network
+from .underlay import create_underlay_network, find_shortest_path_with_delay
 from .overlay import create_overlay_network, create_fully_connected_overlay_network
 from .algorithms import minimum_spanning_tree, activate_links_random_spanning_tree, activate_links_ring_topology

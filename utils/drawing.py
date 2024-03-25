@@ -98,3 +98,32 @@ def plot_acc_loss_over_epochs(lost_hitory, val_accuracies):
     plt.tight_layout()
      # Display the plot
     plt.savefig('plot_loss_acc_epoch.png')
+
+
+def plot_acc_loss_for_different_times(loss_history, val_accuracies, time_per_epoch_list, labels):
+    epochs = range(1, len(loss_history) + 1)
+
+    plt.figure(figsize=(14, 6))
+
+    # Plotting loss for different time per epoch
+    plt.subplot(1, 2, 1)
+    for time_per_epoch, label in zip(time_per_epoch_list, labels):
+        cumulative_time_slots = [time_per_epoch * epoch for epoch in epochs]
+        plt.plot(cumulative_time_slots, loss_history, label=f'Loss - {label}')
+    plt.title('Global Average Loss over Cumulative Time')
+    plt.xlabel('Cumulative Time')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    # Plotting validation accuracy for different time per epoch
+    plt.subplot(1, 2, 2)
+    for time_per_epoch, label in zip(time_per_epoch_list, labels):
+        cumulative_time_slots = [time_per_epoch * epoch for epoch in epochs]
+        plt.plot(cumulative_time_slots, val_accuracies, label=f'Accuracy - {label}', marker='o')
+    plt.title('Validation Accuracy over Cumulative Time')
+    plt.xlabel('Cumulative Time')
+    plt.ylabel('Accuracy')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('plot_loss_acc_different_times.png')

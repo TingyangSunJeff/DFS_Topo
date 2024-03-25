@@ -54,6 +54,36 @@ def create_model():
     ])
     return model
 
+
+def create_resnet50_model(input_shape, num_classes):
+    """
+    Create a ResNet50 model for classification.
+
+    Parameters:
+    - input_shape: The shape of the input data (height, width, channels).
+    - num_classes: The number of classes for the output layer.
+
+    Returns:
+    A TensorFlow Keras model instance.
+    """
+    # Load the ResNet50 model, excluding its top (output) layer
+    base_model = tf.keras.applications.ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
+
+    # Freeze the layers of the base_model
+    for layer in base_model.layers:
+        layer.trainable = False
+
+    # Add new layers on top of the model
+    model = tf.keras.Sequential([
+        base_model,
+        tf.keras.layers.GlobalAveragePooling2D(),
+        tf.keras.layers.Dense(1024, activation='relu'),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(num_classes, activation='softmax')
+    ])
+
+    return model
+
 def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, epochs=80, batch_size=64):
     # Initialize models and optimizers for each agent
     num_agents = len(OVERLAY_NODES)

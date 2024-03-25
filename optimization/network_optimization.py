@@ -1,12 +1,27 @@
 from gurobipy import Model, GRB, quicksum
-from utils import adjust_matrix
+from utils import adjust_matrix, edges_to_delay_map_with_reversed, map_overlay_to_underlay_edges
 from config import OVERLAY_NODES
 import cvxpy as cp
 import numpy as np
 
 
-def optimize_network_route_rate(H, Ea, mst_edges, overlay_links, multicast_demands, link_delay_map, overlay_links_map, link_capacity_map):
+def optimize_network_route_rate(fully_connected_overlay, multicast_demands, undelay_network, link_capacity_map):
+    underlay_links = list(undelay_network.edges)
 
+    overlay_links = []
+    # Populate the undirected_links list
+    for link in fully_connected_overlay.edges():
+        overlay_links.append(link)  # Add original direction
+        overlay_links.append(link[::-1])  # Add reverse direction
+
+    H=[]
+    for source, destinations, data_size in multicast_demands:
+        for destination in destinations:
+            H.append((source, destination, data_size))
+
+    link_delay_map, link_path_map = edges_to_delay_map_with_reversed(fully_connected_overlay.edges(data=True))
+
+    overlay_links_map = map_overlay_to_underlay_edges(undelay_network, overlay_links, link_path_map)
     # Placeholder for initialization of Gurobi model
     m = Model("tau_optimization")
 
@@ -47,17 +62,17 @@ def optimize_network_route_rate(H, Ea, mst_edges, overlay_links, multicast_deman
             m.addConstr(tau >= k_h * d_inv[s_h, frozenset(T_h), k_h] + quicksum(link_delay_map[i, j] * r[i, j, s_h, k, k_h] for i, j in overlay_links))
 
     # (5c) The total traffic rate imposed by the overlay on any underlay link is within its capacity
-    for u,v,_ in mst_edges:
-        underlay_link = tuple(sorted((u,v)))
+    for underlay_link in underlay_links:
         if overlay_links_map[underlay_link]:
-            m.addConstr(quicksum(f[ovelaylink, (s_h, frozenset(T_h), k_h)] for ovelaylink in overlay_links_map[underlay_link] for s_h, T_h, k_h in multicast_demands) <= link_capacity_map[underlay_link])
+            m.addConstr(quicksum(f[ovelaylink, (s_h, frozenset(T_h), k_h)] 
+                                 for ovelaylink in overlay_links_map[underlay_link] for s_h, T_h, k_h in multicast_demands) <= link_capacity_map[tuple(sorted(underlay_link))])
 
     # (5d) Flow conservation for non-source, non-destination nodes
     for s_h, k, k_h  in H:
         for i in OVERLAY_NODES:
             b = 1 if i==s_h else (-1 if i==k else 0)
-            m.addConstr(quicksum(r[i, j, s_h, k, k_h] for j in OVERLAY_NODES if (i, j) in Ea) ==
-                        quicksum(r[j, i, s_h, k, k_h] for j in OVERLAY_NODES if (i, j) in Ea) + b)
+            m.addConstr(quicksum(r[i, j, s_h, k, k_h] for j in OVERLAY_NODES if (i, j) in overlay_links) ==
+                        quicksum(r[j, i, s_h, k, k_h] for j in OVERLAY_NODES if (i, j) in overlay_links) + b)
 
     # (5e) Flow only happens on active paths
     for s_h, T_h, k_h in multicast_demands:
@@ -87,7 +102,7 @@ def optimize_network_route_rate(H, Ea, mst_edges, overlay_links, multicast_deman
     else:
         print('No optimal solution found')
 
-    return z,f,d,r,m.getVarByName("tau").X
+    return m.getVarByName("tau").X
 
 # # Additional functions and helpers could also be defined here if needed
 

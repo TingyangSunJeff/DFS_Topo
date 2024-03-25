@@ -1,4 +1,5 @@
 import networkx as nx
+from network import find_shortest_path_with_delay
 
 def create_overlay_network(underlay, overlay_nodes):
     # Create an empty graph
@@ -28,7 +29,8 @@ def create_fully_connected_overlay_network(underlay, overlay_nodes):
     # Initialize as a fully connected network
     for i in range(len(overlay_nodes)):
         for j in range(i + 1, len(overlay_nodes)):
-            overlay.add_edge(overlay_nodes[i], overlay_nodes[j])
+            path, path_delay = find_shortest_path_with_delay(underlay,overlay_nodes[i],overlay_nodes[j])
+            overlay.add_edge(overlay_nodes[i], overlay_nodes[j], delay=path_delay, underlay_path=path)
 
     # At this stage, all overlay links are potential and need to be activated based on the design algorithm
     return overlay
