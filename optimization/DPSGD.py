@@ -1,13 +1,13 @@
 # training/p_psgd_training.py
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, Flatten, Dense
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from config import PROJECT_PATH
 from tensorflow.keras.datasets import mnist, cifar10
-from config import OVERLAY_NODES
 
 def load_and_preprocess_data(dataset_name='mnist'):
     """
@@ -19,18 +19,20 @@ def load_and_preprocess_data(dataset_name='mnist'):
     Returns:
     - Tuple of Numpy arrays: (x_train, y_train), (x_test, y_test)
     """
+    # current_dir = os.getcwd()
     if dataset_name == 'mnist':
-        dataset_path = os.path.join(PROJECT_PATH, 'mnist.npz')
-        (x_train, y_train), (x_test, y_test) = mnist.load_data(path=dataset_path)
+        # Load the MNIST dataset
+        (x_train, y_train), (x_test, y_test) = mnist.load_data()
         x_train, x_test = x_train / 255.0, x_test / 255.0  # Normalize the data
         x_train = x_train[..., np.newaxis]  # Add channel dimension
         x_test = x_test[..., np.newaxis]
     elif dataset_name == 'cifar10':
-        dataset_path = os.path.join(PROJECT_PATH, 'cifar10.npz')
-        (x_train, y_train), (x_test, y_test) = cifar10.load_data(path=dataset_path)
+        # Load the CIFAR-10 dataset
+        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         x_train, x_test = x_train / 255.0, x_test / 255.0  # Normalize the data
     else:
         raise ValueError("Unsupported dataset. Please choose either 'mnist' or 'cifar10'.")
+
 
     y_train, y_test = y_train.astype(np.int32), y_test.astype(np.int32)  # Ensure labels are integers
     
@@ -46,14 +48,37 @@ def load_and_preprocess_data(dataset_name='mnist'):
     return (x_train, y_train), (x_test, y_test)
 
 
-def create_model():
+def create_mnist_model(input_shape=(28, 28, 1), num_classes=10):
+    """
+    Create a 4-layer CNN model for the MNIST dataset.
+    
+    Parameters:
+    - input_shape: The shape of the input data, including the channel dimension.
+    - num_classes: The number of classes for the output layer.
+    
+    Returns:
+    A TensorFlow Keras model instance.
+    """
+    model = Sequential([
+        Conv2D(32, kernel_size=(5, 5), activation='relu', input_shape=input_shape),
+        MaxPooling2D(pool_size=(2, 2)),
+        Conv2D(64, (5, 5), activation='relu'),
+        MaxPooling2D(pool_size=(2, 2)),
+        Flatten(),
+        Dense(512, activation='relu'),
+        Dropout(0.5),
+        Dense(num_classes, activation='softmax')
+    ])
+    
+    return model
+
+def create_model(input_shape, num_classes):
     model = Sequential([
         Flatten(input_shape=(28, 28)),
         Dense(128, activation='relu'),
         Dense(10)
     ])
     return model
-
 
 def create_resnet50_model(input_shape, num_classes):
     """
@@ -69,9 +94,8 @@ def create_resnet50_model(input_shape, num_classes):
     # Load the ResNet50 model, excluding its top (output) layer
     base_model = tf.keras.applications.ResNet50(weights='imagenet', include_top=False, input_shape=input_shape)
 
-    # Freeze the layers of the base_model
-    for layer in base_model.layers:
-        layer.trainable = False
+    # Set all layers of the base_model to be trainable
+    base_model.trainable = False
 
     # Add new layers on top of the model
     model = tf.keras.Sequential([
@@ -84,12 +108,29 @@ def create_resnet50_model(input_shape, num_classes):
 
     return model
 
-def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, epochs=80, batch_size=64):
-    # Initialize models and optimizers for each agent
-    num_agents = len(OVERLAY_NODES)
-    agents_models = [create_model() for _ in range(num_agents)]
-    optimizers = [tf.keras.optimizers.SGD(learning_rate=0.01) for _ in range(num_agents)]
-    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, num_agents, dataset_flag, epochs=80, batch_size=64):
+    """
+        Train models using decentralized parallel SGD with a specified dataset.
+        
+        Parameters:
+        - x_train, y_train: Training data and labels.
+        - x_test, y_test: Test data and labels.
+        - mixing_matrix: The mixing matrix W used for parameter aggregation.
+        - num_agents: The number of agents (models) to train in parallel.
+        - dataset_flag: A flag indicating which dataset (and model) to use ('mnist' or 'cifar10').
+        - epochs: The number of training epochs.
+        - batch_size: The size of the batches for training.
+    """
+    # Initialize models based on the dataset
+    if dataset_flag == 'mnist':
+        agents_models = [create_model(input_shape=(28, 28, 1), num_classes=10) for _ in range(num_agents)]
+    elif dataset_flag == 'cifar10':
+        agents_models = [create_resnet50_model(input_shape=(32, 32, 3), num_classes=10) for _ in range(num_agents)]
+    else:
+        raise ValueError("Unsupported dataset flag. Please choose either 'mnist' or 'cifar10'.")
+
+    optimizers = [tf.keras.optimizers.SGD(learning_rate=0.02) for _ in range(num_agents)]
+    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)
     # Define the mixing matrix W and other training parameters here
     # Followed by the training loop and evaluation as in your script
     # Example of tracking accuracy
@@ -128,7 +169,7 @@ def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, epochs=80, 
                 optimizers[i].apply_gradients(zip(grads, agents_models[i].trainable_variables))
 
                 if step % 100 == 0:
-                    print(f"Step {step}: Loss = {loss.numpy()}")
+                    print(f"Step {step} {i+1}/{num_agents}: Loss = {loss.numpy()}")
         lost_hitory.append(sum(epoch_loss)/len(epoch_loss))
         print(f"Epoch {epoch+1}, global objective loss: {sum(epoch_loss)/len(epoch_loss)}")
         # Validation step at the end of each epoch
@@ -145,7 +186,3 @@ def d_psgd_training(x_train, y_train, x_test, y_test, mixing_matrix, epochs=80, 
         val_accuracies.append(val_accuracy)
         print(f"Epoch {epoch+1}, Validation Accuracy: {val_accuracy.numpy()}")
     return lost_hitory, val_accuracies
-
-def evaluate_agents_models(agents_models, x_test, y_test, batch_size=64):
-    # Evaluation logic as in your script
-    pass

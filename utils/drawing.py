@@ -127,3 +127,37 @@ def plot_acc_loss_for_different_times(loss_history, val_accuracies, time_per_epo
 
     plt.tight_layout()
     plt.savefig('plot_loss_acc_different_times.png')
+
+
+def plot_degree_distribution(node_degrees):
+    """
+    Plot the degree distribution of a network.
+
+    Parameters:
+    - node_degrees (dict): A dictionary where keys are node indices and values are the degrees of those nodes.
+    """
+    # Extract degree values from the dictionary and sort them
+    degrees = list(node_degrees.values())
+    
+    # Create a frequency distribution of degrees
+    degree_counts = {}
+    for degree in degrees:
+        if degree in degree_counts:
+            degree_counts[degree] += 1
+        else:
+            degree_counts[degree] = 1
+            
+    # Prepare data for plotting
+    degrees = list(degree_counts.keys())
+    counts = list(degree_counts.values())
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(degrees, counts, color='skyblue')
+    
+    plt.title('Degree Distribution')
+    plt.xlabel('Degree')
+    plt.ylabel('Count')
+    plt.xticks(degrees)  # Set x-ticks to be the degrees, for better visualization
+    plt.grid(axis='y', linestyle='--')
+    
+    plt.savefig('degree.png')
