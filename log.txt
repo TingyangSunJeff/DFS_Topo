@@ -1,0 +1,25 @@
+Agent 1, Epoch 1, Loss: 0.9697805643081665, Accuracy: 67.33800506591797, Time: 869.67s
+Agent 2, Epoch 1, Loss: 0.9695425033569336, Accuracy: 67.39399719238281, Time: 869.67s
+Agent 3, Epoch 1, Loss: 0.9696957468986511, Accuracy: 67.42200469970703, Time: 869.67s
+Agent 4, Epoch 1, Loss: 0.9696695804595947, Accuracy: 67.41799926757812, Time: 869.67s
+Agent 5, Epoch 1, Loss: 0.9693043231964111, Accuracy: 67.50399780273438, Time: 869.67s
+Agent 6, Epoch 1, Loss: 0.9698356986045837, Accuracy: 67.53800201416016, Time: 869.67s
+Agent 7, Epoch 1, Loss: 0.9689658880233765, Accuracy: 67.48200225830078, Time: 869.67s
+Agent 8, Epoch 1, Loss: 0.969908595085144, Accuracy: 67.50800323486328, Time: 869.67s
+Agent 9, Epoch 1, Loss: 0.9701226949691772, Accuracy: 67.47200012207031, Time: 869.67s
+Agent 10, Epoch 1, Loss: 0.9706473350524902, Accuracy: 67.40599822998047, Time: 869.67s
+
+5*list of result yudi 
+resnet50 tranfer training 
+mini connected design output running 
+
+
+1. do not pretrain start with random on 5 gpus
+
+2. plot debug 
+
+3. reset50 model size yudi in bits with yudi 
+
+4/ without overlay routing tau yudi
+
+5. email for each

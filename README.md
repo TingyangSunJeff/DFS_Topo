@@ -25,3 +25,6 @@ pip install -r requirements.txt
 # Configuration
 # Architecture
 # Results
+Given this information, if we are to assume that the edge capacities (due to low bandwidth of 0.001 Gbps) are the primary constraint, it would lead us to lean towards Roofnet being edge-capacitated. This is because the bandwidth limitations on links could be the most significant factor in determining the network's performance, rather than the computational capabilities of individual nodes.
+IAB -  edge-capacitated
+Abovenet - node-capacitated

@@ -1,6 +1,7 @@
 # utils/drawing.py
 import matplotlib.pyplot as plt
 import networkx as nx
+import os
 
 def draw_network(network, title="Network Graph", node_color='lightblue', edge_color='gray'):
     """Draw the network with nodes and edges."""
@@ -9,17 +10,9 @@ def draw_network(network, title="Network Graph", node_color='lightblue', edge_co
     nx.draw_networkx_edges(network, pos, edge_color=edge_color)
     nx.draw_networkx_labels(network, pos)
     plt.title(title)
-    plt.savefig('plot.png')
-
-def draw_network_with_path(network, path, title="Network Path"):
-    """Draw the network highlighting a specific path."""
-    pos = nx.spring_layout(network)
-    nx.draw_networkx(network, pos)
-    path_edges = list(zip(path,path[1:]))
-    nx.draw_networkx_edges(network, pos, edgelist=path_edges, edge_color='r', width=2)
-    plt.title(title)
-    plt.show()
-
+    save_path = os.path.join(os.getcwd(), 'graph_result', 'plot_underlay.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 def draw_fully_connected_overlay_network(overlay, overlay_nodes, activated_links):
     # Setting up the plot
@@ -43,7 +36,9 @@ def draw_fully_connected_overlay_network(overlay, overlay_nodes, activated_links
     plt.legend()
 
     # Display the plot
-    plt.savefig('plot_overlay.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result', 'plot_overlay.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 
 def draw_underlay_network_with_mst(underlay, mst):
@@ -69,7 +64,9 @@ def draw_underlay_network_with_mst(underlay, mst):
     plt.legend()
 
     # Display the plot
-    plt.savefig('plot.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result', 'plot_underlay.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 
 
@@ -97,7 +94,10 @@ def plot_acc_loss_over_epochs(lost_hitory, val_accuracies):
 
     plt.tight_layout()
      # Display the plot
-    plt.savefig('plot_loss_acc_epoch.png')
+    # Construct the save path dynamically and save the figure
+    save_path = os.path.join(os.getcwd(), 'graph_result', 'plot_overlay.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)
 
 
 def plot_acc_loss_for_different_times(loss_history, val_accuracies, time_per_epoch_list, labels):
@@ -127,3 +127,39 @@ def plot_acc_loss_for_different_times(loss_history, val_accuracies, time_per_epo
 
     plt.tight_layout()
     plt.savefig('plot_loss_acc_different_times.png')
+
+
+def plot_degree_distribution(node_degrees):
+    """
+    Plot the degree distribution of a network.
+
+    Parameters:
+    - node_degrees (dict): A dictionary where keys are node indices and values are the degrees of those nodes.
+    """
+    # Extract degree values from the dictionary and sort them
+    degrees = list(node_degrees.values())
+    
+    # Create a frequency distribution of degrees
+    degree_counts = {}
+    for degree in degrees:
+        if degree in degree_counts:
+            degree_counts[degree] += 1
+        else:
+            degree_counts[degree] = 1
+            
+    # Prepare data for plotting
+    degrees = list(degree_counts.keys())
+    counts = list(degree_counts.values())
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(degrees, counts, color='skyblue')
+    
+    plt.title('Degree Distribution')
+    plt.xlabel('Degree')
+    plt.ylabel('Count')
+    plt.xticks(degrees)  # Set x-ticks to be the degrees, for better visualization
+    plt.grid(axis='y', linestyle='--')
+    
+    save_path = os.path.join(os.getcwd(), 'graph_result', 'degree.png')
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path)

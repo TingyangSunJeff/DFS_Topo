@@ -1,7 +1,5 @@
 # utils/graph_utils.py
 import networkx as nx
-from config import OVERLAY_NODES
-
 
 def calculate_path_delays(network, weight='delay'):
     """Calculate the shortest path delays between all pairs of nodes in a network."""
@@ -13,9 +11,6 @@ def calculate_path_delays(network, weight='delay'):
                 path_delay_map[(source, target)] = path_length
     return path_delay_map
 
-def define_multicast_demands(overlay_network, source_node, destinations, data_size):
-    """Define multicast demands for a given source and set of destination nodes."""
-    return {'source': source_node, 'destinations': destinations, 'data_size': data_size}
 
 def calculate_path_delays(mst, weight='delay'):
     path_delay_map = {}
@@ -27,9 +22,9 @@ def calculate_path_delays(mst, weight='delay'):
                 path_delay_map[(source, target)] = path_delay
     return path_delay_map
 
-def Ea_to_demand_model(activated_links, data_size):
+def Ea_to_demand_model(activated_links, overlay_nodes, data_size=23608202*64):
     multicast_demands = []
-    for node in OVERLAY_NODES:
+    for node in overlay_nodes:
         destinations = {v for u, v in activated_links if u == node} | {u for u, v in activated_links if v == node}
         multicast_demand = (node, destinations, data_size)
         multicast_demands.append(multicast_demand)
@@ -76,3 +71,6 @@ def edges_to_delay_map_with_reversed(edges):
         path_map[(source, target)] = path
         path_map[(target, source)] = path  # Add reversed edge with the same delay
     return delay_map, path_map
+
+
+

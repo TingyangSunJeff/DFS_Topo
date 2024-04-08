@@ -1,13 +1,12 @@
 from gurobipy import Model, GRB, quicksum
 from utils import adjust_matrix, edges_to_delay_map_with_reversed, map_overlay_to_underlay_edges
-from config import OVERLAY_NODES
 import cvxpy as cp
 import numpy as np
 
 
 def optimize_network_route_rate(fully_connected_overlay, multicast_demands, undelay_network, link_capacity_map):
     underlay_links = list(undelay_network.edges)
-
+    overlay_nodes = fully_connected_overlay.nodes
     overlay_links = []
     # Populate the undirected_links list
     for link in fully_connected_overlay.edges():
@@ -69,10 +68,10 @@ def optimize_network_route_rate(fully_connected_overlay, multicast_demands, unde
 
     # (5d) Flow conservation for non-source, non-destination nodes
     for s_h, k, k_h  in H:
-        for i in OVERLAY_NODES:
+        for i in overlay_nodes:
             b = 1 if i==s_h else (-1 if i==k else 0)
-            m.addConstr(quicksum(r[i, j, s_h, k, k_h] for j in OVERLAY_NODES if (i, j) in overlay_links) ==
-                        quicksum(r[j, i, s_h, k, k_h] for j in OVERLAY_NODES if (i, j) in overlay_links) + b)
+            m.addConstr(quicksum(r[i, j, s_h, k, k_h] for j in overlay_nodes if (i, j) in overlay_links) ==
+                        quicksum(r[j, i, s_h, k, k_h] for j in overlay_nodes if (i, j) in overlay_links) + b)
 
     # (5e) Flow only happens on active paths
     for s_h, T_h, k_h in multicast_demands:
@@ -148,7 +147,7 @@ def optimize_K_mixing_matrix(fully_connected_overlay, activated_links):
     for edge_index, edge in enumerate(edges):
         if edge not in E_alpha:
             constraints.append(alpha[edge_index] == 0)
-
+    # constraints.append(alpha >= 0)
     # Define the objective
     objective = cp.Minimize(rho)
 
@@ -159,9 +158,10 @@ def optimize_K_mixing_matrix(fully_connected_overlay, activated_links):
     # After solving the problem, you can access the optimal value of rho and the optimal alpha
     optimal_rho = rho.value
     optimal_alpha = alpha.value
-    W = np.eye(num_nodes) - np.dot(np.dot(B, np.diag(optimal_alpha)), B.T)
-    adjusted_matrix = adjust_matrix(W)
+    optimal_alpha = [x if x >= 1e-5 else 0 for x in optimal_alpha]
 
-    return optimal_rho, adjusted_matrix
+    W = np.eye(num_nodes) - np.dot(np.dot(B, np.diag(optimal_alpha)), B.T)
+
+    return optimal_rho, W
 
 
