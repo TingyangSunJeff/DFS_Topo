@@ -75,7 +75,7 @@ def load_network_data(loaded_network_settings, network_type):
                         continue  # Skip lines that don't have enough data
                     u = int(parts[1])  # src
                     v = int(parts[2])  # dest
-                    weight = int(parts[4])  # capacity 1 Gbps
+                    weight = int(parts[4])  # capacity 1 Gbps / 1000000
                     delay = float(parts[5])  # prop delay  [0.1, 13.8] ms
                     edges.append((u, v, weight, delay))
                     # For directed graphs, increment out-degree of u and in-degree of v

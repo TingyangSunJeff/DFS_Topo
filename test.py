@@ -12,7 +12,7 @@ import argparse
 
 def create_resnet50_cifar10():
     input_tensor = Input(shape=(32, 32, 3))
-    base_model = ResNet50(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling='avg')
+    base_model = ResNet50(include_top=False, weights=None, input_tensor=input_tensor, pooling='avg')
     x = Flatten()(base_model.output)
     output_tensor = Dense(10, activation='softmax')(x)
 
@@ -56,7 +56,7 @@ def aggregate_parameters(models, mixing_matrix):
 def main(mixing_matrix_path, output_file):
     # Load CIFAR-10 data
     (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-
+    print("=========", mixing_matrix_path)
     # Normalize pixel values
     train_images, test_images = train_images / 255.0, test_images / 255.0
 
@@ -72,45 +72,45 @@ def main(mixing_matrix_path, output_file):
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
 
-    model = create_resnet50_cifar10()
-    total_params = model.count_params()
-    print(f'Total Parameters: {total_params}')
-    # epochs = 50
-    # num_agents = 10
-    # # Loss function
-    # loss_fn = tf.keras.losses.CategoricalCrossentropy()
-    # models = [create_resnet50_cifar10() for _ in range(num_agents)]
-    # optimizers = [tf.keras.optimizers.Adam() for _ in range(num_agents)]
-    # train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
-    # train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
-    # metrics_history = {
-    #     'train_loss': [[] for _ in range(num_agents)],
-    #     'test_accuracy': [[] for _ in range(num_agents)],
-    #     'model_weights_paths': [None for _ in range(num_agents)]  # To store paths of saved model weights
-    # }
-    # for epoch in range(epochs):
-    #     # Training loop for one epoch
-    #     for train_loss, train_accuracy in zip(train_losses, train_accuracies):
-    #         train_loss.reset_states()
-    #         train_accuracy.reset_states()
-    #     start_time = time.time()
-    #     for images, labels in train_dataset:
-    #         train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
-    #     end_time = time.time()
-    #     # Print training loss and accuracy
-    #     for i in range(num_agents):
-    #         metrics_history['train_loss'][i].append(train_losses[i].result().numpy())
-    #         metrics_history['test_accuracy'][i].append(train_accuracies[i].result().numpy())
-    #         print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {train_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
+    # model = create_resnet50_cifar10()
+    # total_params = model.count_params()
+    # print(f'Total Parameters: {total_params}')
+    epochs = 50
+    num_agents = 10
+    # Loss function
+    loss_fn = tf.keras.losses.CategoricalCrossentropy()
+    models = [create_resnet50_cifar10() for _ in range(num_agents)]
+    optimizers = [tf.keras.optimizers.Adam() for _ in range(num_agents)] # 0.001 learning rate
+    train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
+    train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
+    metrics_history = {
+        'train_loss': [[] for _ in range(num_agents)],
+        'test_accuracy': [[] for _ in range(num_agents)],
+        'model_weights_paths': [None for _ in range(num_agents)]  # To store paths of saved model weights
+    }
+    for epoch in range(epochs):
+        # Training loop for one epoch
+        for train_loss, train_accuracy in zip(train_losses, train_accuracies):
+            train_loss.reset_states()
+            train_accuracy.reset_states()
+        start_time = time.time()
+        for images, labels in train_dataset:
+            train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
+        end_time = time.time()
+        # Print training loss and accuracy
+        for i in range(num_agents):
+            metrics_history['train_loss'][i].append(train_losses[i].result().numpy())
+            metrics_history['test_accuracy'][i].append(train_accuracies[i].result().numpy())
+            print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {train_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
 
-    # # After training is complete, save the model weights
-    # for i, model in enumerate(models):
-    #     model_weights_path = f"./model_weights/model_{i+1}_weights_epoch_{epochs}.tf"
-    #     model.save_weights(model_weights_path)
-    #     metrics_history['model_weights_paths'][i] = model_weights_path
+    # After training is complete, save the model weights
+    for i, model in enumerate(models):
+        model_weights_path = f"./model_weights/model_{i+1}_weights_epoch_{epochs}.tf"
+        model.save_weights(model_weights_path)
+        metrics_history['model_weights_paths'][i] = model_weights_path
 
-    # with open(output_file, 'wb') as file:
-    #     pickle.dump(metrics_history, file)
+    with open(output_file, 'wb') as file:
+        pickle.dump(metrics_history, file)
 
 
 if __name__ == "__main__":

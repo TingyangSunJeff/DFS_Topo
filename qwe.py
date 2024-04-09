@@ -1,23 +1,22 @@
-import tensorflow as tf
-from tensorflow.keras.datasets import cifar10
-from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.layers import Input, Flatten, Dense
-from tensorflow.keras.models import Model
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.metrics import CategoricalAccuracy
-import time
-import numpy as np
 import pickle
-import argparse
-def create_resnet50_cifar10():
-    input_tensor = Input(shape=(32, 32, 3))
-    base_model = ResNet50(include_top=False, weights="imagenet", input_tensor=input_tensor, pooling='avg')
-    x = Flatten()(base_model.output)
-    output_tensor = Dense(10, activation='softmax')(x)
+import os
 
-    model = Model(inputs=input_tensor, outputs=output_tensor)
-    return model
+# List of file paths
+file_paths = [
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRRhoEw.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRLambda2Ew.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_BoydGreedy.pkl"
+]
 
-model = create_resnet50_cifar10()
-total_params = model.count_params()
-print(f'Total Parameters: {total_params}')
+# Loop through each file
+for file_path in file_paths:
+    # Load the contents of the file
+    with open(file_path, 'rb') as file:
+        data = pickle.load(file)    
+        print(data)
+        # Extract the tau value
+        tau = data.get('tau')
+        
+        # Print the file name and tau value
+        print(f"File: {os.path.basename(file_path)} - Tau: {tau}")
