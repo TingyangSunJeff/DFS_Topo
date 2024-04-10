@@ -5,8 +5,8 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRRhoEw.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_BoydGreedy.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SCA23_1.pkl",
     '/scratch2/tingyang/DFS_Topo/result_for_resnet_ring.pkl',

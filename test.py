@@ -80,7 +80,7 @@ def main(mixing_matrix_path, output_file):
     # model = create_resnet50_cifar10()
     # total_params = model.count_params()
     # print(f'Total Parameters: {total_params}')
-    epochs = 30
+    epochs = 50
     num_agents = 10
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()

@@ -5,10 +5,14 @@ PYTHON_SCRIPT_PATH="test.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_clique.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_prim.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_random.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_ring.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_clique.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_prim.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_random.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_ring.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_BoydGreedy_1.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_SCA23_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_SDRLambda2Ew_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_SDRRhoEw_1.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
