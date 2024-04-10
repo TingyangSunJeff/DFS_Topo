@@ -158,10 +158,10 @@ def optimize_K_mixing_matrix(fully_connected_overlay, activated_links):
     # After solving the problem, you can access the optimal value of rho and the optimal alpha
     optimal_rho = rho.value
     optimal_alpha = alpha.value
+    print("=====", optimal_rho)
     optimal_alpha = [x if x >= 1e-5 else 0 for x in optimal_alpha]
 
     W = np.eye(num_nodes) - np.dot(np.dot(B, np.diag(optimal_alpha)), B.T)
-
     return optimal_rho, W
 
 

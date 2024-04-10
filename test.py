@@ -20,9 +20,15 @@ def create_resnet50_cifar10():
     return model
 
 @tf.function
-def train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies):
-    mixing_matrix = tf.cast(mixing_matrix, tf.float32)  # Ensure mixing_matrix is float32
+def train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies):
+    # Split the big batch into smaller batches for each agent
+    batch_size_per_agent = tf.shape(big_batch_images)[0] // len(models)
     for i, model in enumerate(models):
+        start = i * batch_size_per_agent
+        end = start + batch_size_per_agent
+        images = big_batch_images[start:end]
+        labels = big_batch_labels[start:end]
+
         with tf.GradientTape() as tape:
             predictions = model(images, training=True)
             loss = loss_fn(labels, predictions)
@@ -30,6 +36,7 @@ def train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn,
         optimizers[i].apply_gradients(zip(gradients, model.trainable_variables))
         train_losses[i].update_state(loss)
         train_accuracies[i].update_state(labels, predictions)
+
     # Simulate D-PSGD parameter aggregation after each training step
     aggregate_parameters(models, mixing_matrix)
 
@@ -41,12 +48,8 @@ def aggregate_parameters(models, mixing_matrix):
         vars_to_aggregate = [model.trainable_variables[var_idx] for model in models]
         # Stack the variables along a new dimension to make them a single tensor
         stacked_vars = tf.stack(vars_to_aggregate, axis=0)
-        
-        # Apply the mixing matrix (weights) to the stacked variables
-        # mixing_matrix shape: [num_agents, num_agents]
-        # stacked_vars shape: [num_agents, var_shape...]
-        # The mixing_matrix is broadcasted to the shape of the variables for weighted sum
-        weighted_vars = tf.tensordot(mixing_matrix, stacked_vars, axes=[[1], [0]])
+        mixing_matrix_float32 = tf.cast(mixing_matrix, tf.float32)
+        weighted_vars = tf.tensordot(mixing_matrix_float32, stacked_vars, axes=[[1], [0]])
         
         # Assign the weighted sum back to each model's variable
         for i, model in enumerate(models):
@@ -64,9 +67,11 @@ def main(mixing_matrix_path, output_file):
     train_labels = to_categorical(train_labels, 10)
     test_labels = to_categorical(test_labels, 10)
 
-    batch_size = 64
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(batch_size).prefetch(tf.data.AUTOTUNE).cache()
-
+    # batch_size = 64
+    # train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    num_agents = 10
+    big_batch_size = 64 * num_agents
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
     # Open the file in binary read mode
     with open(mixing_matrix_path, 'rb') as file:
         # Load the content of the file into a Python object
@@ -75,7 +80,7 @@ def main(mixing_matrix_path, output_file):
     # model = create_resnet50_cifar10()
     # total_params = model.count_params()
     # print(f'Total Parameters: {total_params}')
-    epochs = 50
+    epochs = 30
     num_agents = 10
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
@@ -85,8 +90,7 @@ def main(mixing_matrix_path, output_file):
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {
         'train_loss': [[] for _ in range(num_agents)],
-        'test_accuracy': [[] for _ in range(num_agents)],
-        'model_weights_paths': [None for _ in range(num_agents)]  # To store paths of saved model weights
+        'test_accuracy': [[] for _ in range(num_agents)]
     }
     for epoch in range(epochs):
         # Training loop for one epoch
@@ -94,8 +98,8 @@ def main(mixing_matrix_path, output_file):
             train_loss.reset_states()
             train_accuracy.reset_states()
         start_time = time.time()
-        for images, labels in train_dataset:
-            train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
+        for big_batch_images, big_batch_labels in train_dataset:
+            train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
         end_time = time.time()
         # Print training loss and accuracy
         for i in range(num_agents):
@@ -104,10 +108,10 @@ def main(mixing_matrix_path, output_file):
             print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {train_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
 
     # After training is complete, save the model weights
-    for i, model in enumerate(models):
-        model_weights_path = f"./model_weights/model_{i+1}_weights_epoch_{epochs}.tf"
-        model.save_weights(model_weights_path)
-        metrics_history['model_weights_paths'][i] = model_weights_path
+    # for i, model in enumerate(models):
+    #     model_weights_path = f"./model_weights/model_{i+1}_weights_epoch_{epochs}.tf"
+    #     model.save_weights(model_weights_path)
+    #     metrics_history['model_weights_paths'][i] = model_weights_path
 
     with open(output_file, 'wb') as file:
         pickle.dump(metrics_history, file)

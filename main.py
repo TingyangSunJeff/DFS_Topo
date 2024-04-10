@@ -95,31 +95,35 @@ def main():
     # Example: Activate links using a random spanning tree algorithm
 
     # (11)
-    # optimal_rho_tilde, mixing_matrix_random = optimize_K_mixing_matrix(fully_connected_overlay, activated_links)
-    # optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
-    # optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, fully_connected_overlay.edges)
-    # optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
-    # mixing_matrices = {
-    #     'mixing_matrix_random.pkl': mixing_matrix_random,
-    #     'mixing_matrix_ring.pkl': mixing_matrix_ring,
-    #     'mixing_matrix_clique.pkl': mixing_matrix_clique,
-    #     'mixing_matrix_prim.pkl': mixing_matrix_prim,
-    # }
-    # for filename, matrix in mixing_matrices.items():
-    #     with open(f'./mixing_matrix/{filename}', 'wb') as file:
-    #         pickle.dump(matrix, file)
+
+    activated_links = activate_links_random_spanning_tree(fully_connected_overlay)
+    activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
+    activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
+    optimal_rho_tilde, mixing_matrix_random = optimize_K_mixing_matrix(fully_connected_overlay, activated_links)
+    optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
+    optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
+    optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
+    mixing_matrices = {
+        'mixing_matrix_random.pkl': mixing_matrix_random,
+        'mixing_matrix_ring.pkl': mixing_matrix_ring,
+        'mixing_matrix_clique.pkl': mixing_matrix_clique,
+        'mixing_matrix_prim.pkl': mixing_matrix_prim,
+    }
+    for filename, matrix in mixing_matrices.items():
+        with open(f'./mixing_matrix/{filename}', 'wb') as file:
+            pickle.dump(matrix, file)
     # Save each mixing matrix in a separate file with a descriptive name
 
     # load proposed Ea
-    file_paths = [
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_SCA23.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_SDRLambda2Ew.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_SDRRhoEw.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_BoydGreedy.pkl"
-    ]  # Add your file paths here
-    Ea_diction = process_files_and_generate_matrices(file_paths, fully_connected_overlay)
+    # file_paths = [
+    #     "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_SCA23.pkl",
+    #     "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_SDRLambda2Ew.pkl",
+    #     "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_SDRRhoEw.pkl",
+    #     "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_BoydGreedy.pkl"
+    # ]  # Add your file paths here
+    # Ea_diction = process_files_and_generate_matrices(file_paths, fully_connected_overlay)
 
-    # baseline Ea
+    # # baseline Ea
     # Ea_diction ={}
     # benchmark_list = ["ring", "RST", "baseline", "prim"]
     # for key in benchmark_list:
@@ -150,15 +154,15 @@ def main():
     # # print("Mixing matrix from main:\n", mixing_matrix)
 
     # # # # (5)
-    output_dic = {} # topo : tau
-    data_size = loaded_network_settings["resnet"] * 64
-    for key, Ea in Ea_diction.items():
-        multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
-        tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-        output_dic[key] = tau
-    print(output_dic)
-    with open('tau_results.pkl', 'wb') as file:
-        pickle.dump(output_dic, file)
+    # output_dic = {} # topo : tau
+    # data_size = loaded_network_settings["resnet"] * 64
+    # for key, Ea in Ea_diction.items():
+    #     multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
+    #     tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+    #     output_dic[key] = tau
+    # print(output_dic)
+    # with open('tau_results.pkl', 'wb') as file:
+    #     pickle.dump(output_dic, file)
 
 
 if __name__ == "__main__":
