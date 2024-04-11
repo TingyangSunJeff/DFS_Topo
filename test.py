@@ -85,7 +85,7 @@ def main(mixing_matrix_path, output_file):
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
     models = [create_resnet50_cifar10() for _ in range(num_agents)]
-    optimizers = [tf.keras.optimizers.Adam() for _ in range(num_agents)] # 0.001 learning rate
+    optimizers = [tf.keras.optimizers.Adam(learning_rate=0.02) for _ in range(num_agents)] # 0.001 learning rate
     train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {

@@ -22,7 +22,7 @@ def calculate_path_delays(mst, weight='delay'):
                 path_delay_map[(source, target)] = path_delay
     return path_delay_map
 
-def Ea_to_demand_model(activated_links, overlay_nodes, data_size=23608202*64):
+def Ea_to_demand_model(activated_links, overlay_nodes, data_size=23608202*32):
     multicast_demands = []
     for node in overlay_nodes:
         destinations = {v for u, v in activated_links if u == node} | {u for u, v in activated_links if v == node}

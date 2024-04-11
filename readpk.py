@@ -46,10 +46,10 @@ def plot_metrics(metrics_dict, title, ylabel):
 # Modify the plot_metrics function to plot against time
 def plot_metrics_time(metrics, title, ylabel, time_per_epoch):
     plt.figure(figsize=(10, 6))
-    for key, metric in metrics.items():
+    for idx, (key, metric) in enumerate(metrics.items()):
         # Calculate cumulative time for each epoch for the current strategy
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * time_per_epoch[key]
+        time = epochs * (time_per_epoch[key]/60)
         plt.plot(time, metric, label=os.path.basename(file_paths[idx]).split('.')[0])
     
     plt.title(title)
@@ -64,13 +64,7 @@ def plot_metrics_time(metrics, title, ylabel, time_per_epoch):
 with open("/scratch2/tingyang/DFS_Topo/tau_results.pkl", 'rb') as file:
     time_per_epoch_diction = pickle.load(file)
 
-time_per_epoch = [
-    2.0999999987992743,  # tau_random
-    2.3999999778061287,  # tau_ring
-    3.2738780733204744,  # tau_baseline
-    1.699999981172566    # tau_prim
-]
-
+print(time_per_epoch_diction)
 # Initialize lists to store averaged metrics
 all_avg_train_loss = {}
 all_avg_test_accuracy = {}
@@ -88,5 +82,5 @@ for file_path in file_paths:
 # Plot the averaged training loss and test accuracy
 plot_metrics(all_avg_train_loss, 'Average Training Loss Across All Agents', 'Loss')
 plot_metrics(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents', 'Accuracy')
-# plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch)
-# plot_metrics_time(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents Over Time', 'Accuracy', time_per_epoch)
+plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch_diction)
+plot_metrics_time(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents Over Time', 'Accuracy', time_per_epoch_diction)

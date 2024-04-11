@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+import os
 def adjust_matrix(matrix):
     adjusted_matrix = np.zeros(matrix.shape)
     for i in range(matrix.shape[0]):
@@ -43,7 +43,8 @@ def load_network_data(loaded_network_settings, network_type):
     edges = []
     num_nodes = 0
     node_degrees = {}
-    file_path = loaded_network_settings[network_type]["file_path"]
+    file_name = loaded_network_settings[network_type]["file_path"]
+    file_path = os.path.join(os.getcwd(), file_name)
     if network_type == 'Roofnet':
         data = pd.read_csv(file_path, sep='\s+')
         # Assuming the highest node index represents the number of nodes
@@ -51,13 +52,35 @@ def load_network_data(loaded_network_settings, network_type):
         for index, row in data.iterrows():
             u = row['node1'] - 1
             v = row['node2'] - 1
-            capacity = 1000  # Assuming capacity as 0.001 Gbps for Roofnet
-            delay = 0.5 # 5.e-04 ms 
+            capacity = 1000000  # capacity as 0.001 Gbps / 1000000 bits per s
+            delay = 5.e-07 # unit: s  5.e-04 ms 
             edges.append((u, v, capacity, delay))
             edges.append((v, u, capacity, delay))
             for node in [u, v]:
                 node_degrees[node] = node_degrees.get(node, 0) + 1
-
+    elif network_type == 'IAB':
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            edge_section = False
+            for line in lines:
+                if line.startswith('NODES'):
+                    num_nodes = int(line.split()[1])
+                    continue
+                if line.startswith('EDGES'):
+                    edge_section = True
+                    continue
+                if edge_section and not line.startswith('label'):
+                    parts = line.strip().split()
+                    if len(parts) < 6:
+                        continue  # Skip lines that don't have enough data
+                    u = int(parts[1])  # src
+                    v = int(parts[2])  # dest
+                    weight = float(parts[4]) * 1.e+9  # capacity 0.4 Gbps / 1000000
+                    delay = float(parts[5]) * 0.001  # prop delay  0.0005 ms
+                    edges.append((u, v, weight, delay))
+                    # For directed graphs, increment out-degree of u and in-degree of v
+                    node_degrees[u] = node_degrees.get(u, 0) + 1
+                    node_degrees[v] = node_degrees.get(v, 0) + 1
     elif network_type == "AboveNet":
         with open(file_path, 'r') as file:
             lines = file.readlines()
@@ -75,7 +98,7 @@ def load_network_data(loaded_network_settings, network_type):
                         continue  # Skip lines that don't have enough data
                     u = int(parts[1])  # src
                     v = int(parts[2])  # dest
-                    weight = int(parts[4])  # capacity 1 Gbps / 1000000
+                    weight = int(parts[4])  # capacity 1 Gbps / e+9
                     delay = float(parts[5])  # prop delay  [0.1, 13.8] ms
                     edges.append((u, v, weight, delay))
                     # For directed graphs, increment out-degree of u and in-degree of v

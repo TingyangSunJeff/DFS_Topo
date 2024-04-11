@@ -1,31 +1,42 @@
 import tensorflow as tf
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.layers import GlobalAveragePooling2D, Dense
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.datasets import cifar10
+from tensorflow.keras.applications.resnet50 import ResNet50
+from tensorflow.keras.layers import Input, Flatten, Dense
+from tensorflow.keras.models import Model
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.metrics import CategoricalAccuracy
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout
-from tensorflow.keras.datasets import mnist
-import numpy as np
 import time
+import numpy as np
 import pickle
 import argparse
+import json
+def create_resnet50_cifar10():
+    input_tensor = Input(shape=(32, 32, 3))
+    base_model = ResNet50(include_top=False, weights=None, input_tensor=input_tensor, pooling='avg')
+    x = Flatten()(base_model.output)
+    output_tensor = Dense(10, activation='softmax')(x)
+
+    model = Model(inputs=input_tensor, outputs=output_tensor)
+    return model
 
 @tf.function
-def test_step(images, labels, models, loss_fn, test_accuracies):
+def test_step_dpsgd(test_images, test_labels, models, loss_fn, test_losses, test_accuracies):
     for i, model in enumerate(models):
-        predictions = model(images, training=False)
-        # loss = loss_fn(labels, predictions)
-        # test_losses[i].update_state(loss)
-        test_accuracies[i].update_state(labels, predictions)
+        predictions = model(test_images, training=False)
+        loss = loss_fn(test_labels, predictions)
+        test_losses[i].update_state(loss)
+        test_accuracies[i].update_state(test_labels, predictions)
 
 @tf.function
-def train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies):
-    mixing_matrix = tf.cast(mixing_matrix, tf.float32)  # Ensure mixing_matrix is float32
+def train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies):
+    # Split the big batch into smaller batches for each agent
+    batch_size_per_agent = tf.shape(big_batch_images)[0] // len(models)
     for i, model in enumerate(models):
+        start = i * batch_size_per_agent
+        end = start + batch_size_per_agent
+        images = big_batch_images[start:end]
+        labels = big_batch_labels[start:end]
+
         with tf.GradientTape() as tape:
             predictions = model(images, training=True)
             loss = loss_fn(labels, predictions)
@@ -33,6 +44,7 @@ def train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn,
         optimizers[i].apply_gradients(zip(gradients, model.trainable_variables))
         train_losses[i].update_state(loss)
         train_accuracies[i].update_state(labels, predictions)
+
     # Simulate D-PSGD parameter aggregation after each training step
     aggregate_parameters(models, mixing_matrix)
 
@@ -44,106 +56,80 @@ def aggregate_parameters(models, mixing_matrix):
         vars_to_aggregate = [model.trainable_variables[var_idx] for model in models]
         # Stack the variables along a new dimension to make them a single tensor
         stacked_vars = tf.stack(vars_to_aggregate, axis=0)
-        
-        # Apply the mixing matrix (weights) to the stacked variables
-        # mixing_matrix shape: [num_agents, num_agents]
-        # stacked_vars shape: [num_agents, var_shape...]
-        # The mixing_matrix is broadcasted to the shape of the variables for weighted sum
-        weighted_vars = tf.tensordot(mixing_matrix, stacked_vars, axes=[[1], [0]])
+        mixing_matrix_float32 = tf.cast(mixing_matrix, tf.float32)
+        weighted_vars = tf.tensordot(mixing_matrix_float32, stacked_vars, axes=[[1], [0]])
         
         # Assign the weighted sum back to each model's variable
         for i, model in enumerate(models):
             model.trainable_variables[var_idx].assign(weighted_vars[i])
-            
-# Define the MNIST model
-def create_mnist_model(input_shape=(28, 28, 1), num_classes=10):
-    """
-    Create a 4-layer CNN model for the MNIST dataset.
-    """
-    model = Sequential([
-        Conv2D(32, kernel_size=(5, 5), activation='relu', input_shape=input_shape),
-        MaxPooling2D(pool_size=(2, 2)),
-        Conv2D(64, (5, 5), activation='relu'),
-        MaxPooling2D(pool_size=(2, 2)),
-        Flatten(),
-        Dense(512, activation='relu'),
-        Dropout(0.5),
-        Dense(num_classes, activation='softmax')
-    ])
-    return model
 
-def load_and_preprocess_data(dataset_name='mnist'):
-    if dataset_name == 'cifar10':
-        (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-        # CIFAR-10: Resize and preprocess
-        x_train = x_train.astype("float32") / 255.0
-        x_test = x_test.astype("float32") / 255.0
-    elif dataset_name == 'mnist':
-        (x_train, y_train), (x_test, y_test) = mnist.load_data()
-        x_train = np.expand_dims(x_train, -1)  # Add channel dimension
-        x_test = np.expand_dims(x_test, -1)
-        # MNIST: Only normalize
-        x_train = x_train.astype("float32") / 255.0
-        x_test = x_test.astype("float32") / 255.0
-    else:
-        raise ValueError("Unsupported dataset. Please choose either 'cifar10' or 'mnist'.")
-
-    # Convert class vectors to binary class matrices (one-hot encoding)
-    y_train = to_categorical(y_train, 10)
-    y_test = to_categorical(y_test, 10)
-
-    return (x_train, y_train), (x_test, y_test)
 
 def main(mixing_matrix_path, output_file):
+    # Load CIFAR-10 data
+    with open('./network_settings.json', 'r') as json_file:
+        loaded_network_settings = json.load(json_file) 
+    (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
+    print("=========", mixing_matrix_path)
+    # Normalize pixel values
+    train_images, test_images = train_images / 255.0, test_images / 255.0
+
+    # Convert labels to one-hot encoding
+    train_labels = to_categorical(train_labels, 10)
+    test_labels = to_categorical(test_labels, 10)
+
+    # batch_size = 64
+    # train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    num_agents = 10
+    big_batch_size = 64 * num_agents
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    test_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
+    test_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
+    # Open the file in binary read mode
     with open(mixing_matrix_path, 'rb') as file:
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
-    # Replace 'yourfile.pkl' with the path to your pickle file
-    num_agents = 10
-    # mixing_matrix = np.full((num_agents, num_age
-    (x_train, y_train), (x_test, y_test) = load_and_preprocess_data()
-    models = [create_mnist_model((28, 28, 1), 10) for _ in range(num_agents)]
-    train_ds = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    train_ds = train_ds.shuffle(10000).batch(64).prefetch(tf.data.experimental.AUTOTUNE)
-    test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test))
-    test_ds = test_ds.batch(64).prefetch(tf.data.experimental.AUTOTUNE)
-    optimizers = [tf.keras.optimizers.Adam(learning_rate=0.0001) for _ in range(num_agents)]
-    loss_fn = tf.keras.losses.CategoricalCrossentropy()
 
-    train_losses, train_accuracies, test_accuracies = [], [], []
-    
-    for i in range(num_agents):
-        train_losses.append(tf.keras.metrics.Mean(name=f'train_loss_{i}'))
-        train_accuracies.append(CategoricalAccuracy(name=f'train_accuracy_{i}'))
-        test_accuracies.append(CategoricalAccuracy(name=f'test_accuracy_{i}'))
-
+    # model = create_resnet50_cifar10()
+    # total_params = model.count_params()
+    # print(f'Total Parameters: {total_params}')
     epochs = 50
+    num_agents = 10
+    # Loss function
+    loss_fn = tf.keras.losses.CategoricalCrossentropy()
+    models = [create_resnet50_cifar10() for _ in range(num_agents)]
+    optimizers = [tf.keras.optimizers.Adam(learning_rate=0.02) for _ in range(num_agents)] # 0.001 learning rate
+    train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
+    train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {
         'train_loss': [[] for _ in range(num_agents)],
-        'test_accuracy': [[] for _ in range(num_agents)],
+        'test_accuracy': [[] for _ in range(num_agents)]
     }
-
     for epoch in range(epochs):
-        start_time = time.time()
-        # Reset metrics at the start of each epoch
-        for train_loss, train_accuracy, test_accuracy in zip(train_losses, train_accuracies, test_accuracies):
+        # Training loop for one epoch
+        for train_loss, train_accuracy, test_loss, test_accuracy in zip(train_losses, train_accuracies, test_losses, test_accuracies):
             train_loss.reset_states()
             train_accuracy.reset_states()
+            test_loss.reset_states()
             test_accuracy.reset_states()
-        # Training step
-        for images, labels in train_ds:
-            train_step_dpsgd(images, labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
-        # Testing step
-        for test_images, test_labels in test_ds:
-            test_step(test_images, test_labels, models, loss_fn, test_accuracies)
+        start_time = time.time()
+        for big_batch_images, big_batch_labels in train_dataset:
+            train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
+        for test_batch_images, test_batch_labels in test_dataset:
+            test_step_dpsgd(test_batch_images, test_batch_labels, models, loss_fn, test_losses, test_accuracies)
         end_time = time.time()
-
-        # Save metrics for this epoch
+        # Print training loss and accuracy
         for i in range(num_agents):
             metrics_history['train_loss'][i].append(train_losses[i].result().numpy())
             metrics_history['test_accuracy'][i].append(test_accuracies[i].result().numpy())
-            # Optionally print the metrics
-            print(f"Agent {i+1}, Epoch {epoch+1}, Loss: {train_losses[i].result()}, Accuracy: {train_accuracies[i].result()*100}%, Time: {end_time - start_time:.2f}s")
+            print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {test_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
+
+    # After training is complete, save the model weights
+    # for i, model in enumerate(models):
+    #     model_weights_path = f"./model_weights/model_{i+1}_weights_epoch_{epochs}.tf"
+    #     model.save_weights(model_weights_path)
+    #     metrics_history['model_weights_paths'][i] = model_weights_path
 
     with open(output_file, 'wb') as file:
         pickle.dump(metrics_history, file)

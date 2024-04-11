@@ -23,8 +23,8 @@ def optimize_network_route_rate(fully_connected_overlay, multicast_demands, unde
     overlay_links_map = map_overlay_to_underlay_edges(undelay_network, overlay_links, link_path_map)
     # Placeholder for initialization of Gurobi model
     m = Model("tau_optimization")
-
-    M = 1000  # Large constant
+    m.setParam('TimeLimit', 100)
+    M = 1000000  # unit:bits per s
 
     # Define decision variables
     z = {}  # Binary variable for whether a link is used by a demand

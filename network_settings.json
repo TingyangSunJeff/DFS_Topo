@@ -1,32 +1,36 @@
 {
     "AboveNet": {
-        "file_path": "/scratch2/tingyang/DFS_Topo/Abvt.graph", 
+        "file_path": "Abvt.graph", 
         "Propagation_delay_ms": 0.0005,
         "Capacity_Gbps": 1,
         "Number_of_overlay_nodes": 15,
         "Background_utilization": [
             30,
             50
-        ]
+        ],
+        "set_input": false
     },
-    "Hexagonal": {
+    "IAB": {
+        "file_path": "IAB_underlay.Graph", 
         "Propagation_delay_ms": 0.0005,
         "Capacity_Gbps": 0.5,
         "Number_of_overlay_nodes": 10,
         "Background_utilization": [
             30,
             50
-        ]
+        ],
+        "set_input": true
     },
     "Roofnet": {
-        "file_path": "/scratch2/tingyang/DFS_Topo/Roofnet_AvgSuccessRate_1Mbps.txt", 
+        "file_path": "Roofnet_AvgSuccessRate_1Mbps.txt", 
         "Propagation_delay_ms": 0.0005,
         "Capacity_Gbps": 0.001,
         "Number_of_overlay_nodes": 10,
         "Background_utilization": [
             30,
             50
-        ]
+        ],
+        "set_input": false
     },
     "resnet": 23608202,
     "cnn": 1663370
