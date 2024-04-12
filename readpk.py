@@ -5,12 +5,12 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SCA23_1.pkl",
+#     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
+#     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SCA23_1.pkl",
     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_ring.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_random.pkl',
+    # '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_random.pkl',
     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_prim.pkl',
     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_clique.pkl'
 ]
@@ -26,7 +26,7 @@ def average_metrics(metrics_list):
     avg_train_loss = np.mean(metrics_list['train_loss'], axis=0)
     
     # Calculate the average test accuracy across all agents for each epoch
-    avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
+    avg_test_accuracy = np.mean(metrics_list['train_accuracy'], axis=0)
     return avg_train_loss, avg_test_accuracy
 
 # Plotting
@@ -38,7 +38,7 @@ def plot_metrics(metrics_dict, title, ylabel):
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
     plt.legend(loc='best')
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_lr0.001.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path)
 
@@ -56,7 +56,7 @@ def plot_metrics_time(metrics, title, ylabel, time_per_epoch):
     plt.xlabel('Time')
     plt.ylabel(ylabel)
     plt.legend(loc='best')
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_lr0.001.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path)
 
@@ -87,6 +87,7 @@ for file_path in file_paths:
     all_avg_train_loss[matrix_name] = avg_train_loss
     all_avg_test_accuracy[matrix_name] = avg_test_accuracy
 # Plot the averaged training loss and test accuracy
+print(all_avg_test_accuracy)
 plot_metrics(all_avg_train_loss, 'Average Training Loss Across All Agents', 'Loss')
 plot_metrics(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents', 'Accuracy')
 plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch_diction)

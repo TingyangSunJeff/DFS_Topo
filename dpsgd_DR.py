@@ -5,7 +5,7 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_clique.pkl"
 ]
 
 with open(file_paths[0], 'rb') as file:

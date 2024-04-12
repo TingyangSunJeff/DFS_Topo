@@ -18,7 +18,7 @@ import json
 
 def create_resnet50_cifar10():
     input_tensor = Input(shape=(32, 32, 3))
-    base_model = ResNet50(include_top=False, weights=None, input_tensor=input_tensor, pooling='avg')
+    base_model = ResNet50(include_top=False, weights=None, input_tensor=input_tensor, pooling='max')
     x = Flatten()(base_model.output)
     x = BatchNormalization()(x)
     x = Dropout(0.5)(x)
@@ -84,17 +84,17 @@ def main(mixing_matrix_path, output_file):
     # Convert labels to one-hot encoding
     train_labels = to_categorical(train_labels, 10)
     test_labels = to_categorical(test_labels, 10)
-    datagen = ImageDataGenerator(
-        rotation_range=15,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        horizontal_flip=True,
-        zoom_range=0.2
-    )
+    # datagen = ImageDataGenerator(
+    #     rotation_range=15,
+    #     width_shift_range=0.1,
+    #     height_shift_range=0.1,
+    #     horizontal_flip=True,
+    #     zoom_range=0.2
+    # )
     num_agents = 10
     big_batch_size = 64 * num_agents
     # train_dataset = datagen.flow(train_images, train_labels, batch_size=big_batch_size)
-    # train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
     
     test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
     test_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
@@ -104,24 +104,25 @@ def main(mixing_matrix_path, output_file):
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
 
-    epochs = 200
+    epochs = 50
     num_agents = 10
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
     models = [create_resnet50_cifar10() for _ in range(num_agents)]
-    # optimizers = [tf.keras.optimizers.Adam(learning_rate=0.01) for _ in range(num_agents)] # 0.001 learning rate
+
     # initial_learning_rate = 0.02
     # lr_schedule = ExponentialDecay(
     #     initial_learning_rate,
     #     decay_steps=100000,
     #     decay_rate=0.96,
     #     staircase=True)
-
-    optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
+    optimizers = [tf.keras.optimizers.Adam(learning_rate=0.001) for _ in range(num_agents)]
+    # optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
     train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {
         'train_loss': [[] for _ in range(num_agents)],
+        'train_accuracy': [[] for _ in range(num_agents)],
         'test_accuracy': [[] for _ in range(num_agents)]
     }
 
@@ -134,8 +135,8 @@ def main(mixing_matrix_path, output_file):
             test_loss.reset_states()
             test_accuracy.reset_states()
         start_time = time.time()
-        for _ in range(steps_per_epoch):
-            big_batch_images, big_batch_labels = next(datagen.flow(train_images, train_labels, batch_size=big_batch_size))
+        for big_batch_images, big_batch_labels in train_dataset:
+            # big_batch_images, big_batch_labels = next(datagen.flow(train_images, train_labels, batch_size=big_batch_size))
             train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
         for test_batch_images, test_batch_labels in test_dataset:
             test_step_dpsgd(test_batch_images, test_batch_labels, models, loss_fn, test_losses, test_accuracies)
@@ -143,7 +144,8 @@ def main(mixing_matrix_path, output_file):
         # Print training loss and accuracy
         for i in range(num_agents):
             metrics_history['train_loss'][i].append(train_losses[i].result().numpy())
-            metrics_history['test_accuracy'][i].append(train_accuracies[i].result().numpy())
+            metrics_history['train_accuracy'][i].append(train_accuracies[i].result().numpy())
+            metrics_history['test_accuracy'][i].append(test_accuracies[i].result().numpy())
             print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {test_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
 
     with open(output_file, 'wb') as file:
