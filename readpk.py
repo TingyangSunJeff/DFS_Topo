@@ -5,14 +5,14 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
-    "/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SCA23_1.pkl",
-    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_ring.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_random.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_prim.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_clique.pkl'
+    # '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
+    # '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SCA23_1.pkl",
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_ring.pkl',
+    # '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_random.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_prim.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_clique.pkl'
 ]
 
 def read_metrics(file_path):
@@ -97,5 +97,5 @@ for file_path in file_paths:
 # print(all_avg_test_accuracy)
 plot_metrics(all_avg_train_loss, 'Average Training Loss Across All Agents', 'Loss')
 plot_metrics(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents', 'Accuracy')
-plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch_diction)
-plot_metrics_time(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents Over Time', 'Accuracy', time_per_epoch_diction)
+# plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch_diction)
+# plot_metrics_time(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents Over Time', 'Accuracy', time_per_epoch_diction)
