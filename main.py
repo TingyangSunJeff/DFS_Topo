@@ -144,16 +144,16 @@ def main():
     print(tau_diction)
     # # # baseline Ea
     # Ea_diction ={}
-    benchmark_list = ["ring", "random", "clique", "prim"]
-    for key in benchmark_list:
-        if key == "clique":
-            Ea_diction[key] = list(fully_connected_overlay.edges)
-        elif key == "random":
-            Ea_diction[key] = activate_links_random_spanning_tree(fully_connected_overlay)
-        elif key == "ring":
-            Ea_diction[key] = activate_links_ring_topology(fully_connected_overlay)
-        elif key == "prim":
-            Ea_diction[key] = activate_links_prim_topology(fully_connected_overlay)
+    # benchmark_list = ["ring", "random", "clique", "prim"]
+    # for key in benchmark_list:
+    #     if key == "clique":
+    #         Ea_diction[key] = list(fully_connected_overlay.edges)
+    #     elif key == "random":
+    #         Ea_diction[key] = activate_links_random_spanning_tree(fully_connected_overlay)
+    #     elif key == "ring":
+    #         Ea_diction[key] = activate_links_ring_topology(fully_connected_overlay)
+    #     elif key == "prim":
+    #         Ea_diction[key] = activate_links_prim_topology(fully_connected_overlay)
     # print(Ea_diction)
 
     # Draw the networks and their respective trees/topologies
