@@ -5,14 +5,14 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-#     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
-#     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SCA23_1.pkl",
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_ring.pkl',
-    # '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_random.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_prim.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_clique.pkl'
+    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
+    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
+    "/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_SCA23_1.pkl",
+    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_ring.pkl',
+    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_random.pkl',
+    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_prim.pkl',
+    '/scratch2/tingyang/DFS_Topo/saved_training_data/result_for_resnet_Roofnet_clique.pkl'
 ]
 
 def read_metrics(file_path):
@@ -26,7 +26,7 @@ def average_metrics(metrics_list):
     avg_train_loss = np.mean(metrics_list['train_loss'], axis=0)
     
     # Calculate the average test accuracy across all agents for each epoch
-    avg_test_accuracy = np.mean(metrics_list['train_accuracy'], axis=0)
+    avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
     return avg_train_loss, avg_test_accuracy
 
 # Plotting
@@ -46,32 +46,38 @@ def plot_metrics(metrics_dict, title, ylabel):
 # Modify the plot_metrics function to plot against time
 def plot_metrics_time(metrics, title, ylabel, time_per_epoch):
     plt.figure(figsize=(10, 6))
+    benchmark = ["Roofnet_ring", "Roofnet_random", "Roofnet_clique", "Roofnet_prim"]
     for idx, (key, metric) in enumerate(metrics.items()):
         # Calculate cumulative time for each epoch for the current strategy
+        tau = 0
+        if key not in benchmark :
+            tau = time_per_epoch[key] - 100 
+        else:
+            tau = time_per_epoch[key]
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * (time_per_epoch[key]/60)
+        time = epochs * (tau/60)
         plt.plot(time, metric, label=os.path.basename(file_paths[idx]).split('.')[0])
     
     plt.title(title)
     plt.xlabel('Time')
     plt.ylabel(ylabel)
     plt.legend(loc='best')
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_lr0.001.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_(2).png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path)
 
 
-with open("/scratch2/tingyang/DFS_Topo/tau_results.pkl", 'rb') as file:
-    time_per_epoch_diction = pickle.load(file)
+# with open("/scratch2/tingyang/DFS_Topo/saved_training_data/tau_results.pkl", 'rb') as file:
+#     time_per_epoch_diction = pickle.load(file)
 
-print(time_per_epoch_diction)
+# print(time_per_epoch_diction)
 
 
-afaf = {'Roofnet_CIFAR10_SCA23_1': 4532.774887751348, 'Roofnet_CIFAR10_SCA23_2': 4532.774883521915, 'Roofnet_CIFAR10_SCA23_3': 4532.774881939509, 
-        'Roofnet_CIFAR10_SDRLambda2Ew_1': 6043.699793544735, 'Roofnet_CIFAR10_SDRLambda2Ew_2': 6043.6998125462205, 
-        'Roofnet_CIFAR10_SDRLambda2Ew_3': 6043.699812221992, 'Roofnet_CIFAR10_SDRRhoEw_1': 4532.797657392192, 
-        'Roofnet_CIFAR10_BoydGreedy_1': 4532.774885300265, 'ring': 3021.8499280883507, 'random': 3021.850796229334, 'clique': 13598.324506617035, 
-        'prim': 3021.8499001230703}
+time_per_epoch_diction = {'Roofnet_SCA23_1': 4532.774887751348, 'Roofnet_SCA23_2': 4532.774883521915, 'Roofnet_SCA23_3': 4532.774881939509, 
+        'Roofnet_SDRLambda2Ew_1': 6043.699793544735, 'Roofnet_SDRLambda2Ew_2': 6043.6998125462205, 
+        'Roofnet_SDRLambda2Ew_3': 6043.699812221992, 'Roofnet_SDRRhoEw_1': 4532.797657392192, 
+        'Roofnet_BoydGreedy_1': 4532.774885300265, 'Roofnet_ring': 3021.8499280883507, 'Roofnet_random': 3021.850796229334, 'Roofnet_clique': 13598.324506617035, 
+        'Roofnet_prim': 3021.8499001230703}
 # Initialize lists to store averaged metrics
 all_avg_train_loss = {}
 all_avg_test_accuracy = {}
@@ -86,8 +92,9 @@ for file_path in file_paths:
     # Store the averaged metrics in the dictionaries with the extracted name as the key
     all_avg_train_loss[matrix_name] = avg_train_loss
     all_avg_test_accuracy[matrix_name] = avg_test_accuracy
+
 # Plot the averaged training loss and test accuracy
-print(all_avg_test_accuracy)
+# print(all_avg_test_accuracy)
 plot_metrics(all_avg_train_loss, 'Average Training Loss Across All Agents', 'Loss')
 plot_metrics(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents', 'Accuracy')
 plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch_diction)
