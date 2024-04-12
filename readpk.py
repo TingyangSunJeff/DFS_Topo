@@ -9,10 +9,10 @@ file_paths = [
     '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_SCA23_1.pkl",
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_ring.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_random.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_prim.pkl',
-    '/scratch2/tingyang/DFS_Topo/result_for_resnet_clique.pkl'
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_ring.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_random.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_prim.pkl',
+    '/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_clique.pkl'
 ]
 
 def read_metrics(file_path):
@@ -65,6 +65,13 @@ with open("/scratch2/tingyang/DFS_Topo/tau_results.pkl", 'rb') as file:
     time_per_epoch_diction = pickle.load(file)
 
 print(time_per_epoch_diction)
+
+
+afaf = {'Roofnet_CIFAR10_SCA23_1': 4532.774887751348, 'Roofnet_CIFAR10_SCA23_2': 4532.774883521915, 'Roofnet_CIFAR10_SCA23_3': 4532.774881939509, 
+        'Roofnet_CIFAR10_SDRLambda2Ew_1': 6043.699793544735, 'Roofnet_CIFAR10_SDRLambda2Ew_2': 6043.6998125462205, 
+        'Roofnet_CIFAR10_SDRLambda2Ew_3': 6043.699812221992, 'Roofnet_CIFAR10_SDRRhoEw_1': 4532.797657392192, 
+        'Roofnet_CIFAR10_BoydGreedy_1': 4532.774885300265, 'ring': 3021.8499280883507, 'random': 3021.850796229334, 'clique': 13598.324506617035, 
+        'prim': 3021.8499001230703}
 # Initialize lists to store averaged metrics
 all_avg_train_loss = {}
 all_avg_test_accuracy = {}

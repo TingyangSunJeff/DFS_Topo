@@ -1,20 +1,28 @@
 import tensorflow as tf
 from tensorflow.keras.datasets import cifar10
 from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.layers import Input, Flatten, Dense
+from tensorflow.keras.layers import Input, Flatten, Dense, Dropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.metrics import CategoricalAccuracy
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.optimizers import SGD
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.layers import BatchNormalization
+from tensorflow.keras.optimizers.schedules import ExponentialDecay
 import time
 import numpy as np
 import pickle
 import argparse
 import json
+
 def create_resnet50_cifar10():
     input_tensor = Input(shape=(32, 32, 3))
     base_model = ResNet50(include_top=False, weights=None, input_tensor=input_tensor, pooling='avg')
     x = Flatten()(base_model.output)
-    output_tensor = Dense(10, activation='softmax')(x)
+    x = BatchNormalization()(x)
+    x = Dropout(0.5)(x)
+    output_tensor = Dense(10, activation='softmax', kernel_regularizer=l2(0.01))(x)  # Add L2 regularization
 
     model = Model(inputs=input_tensor, outputs=output_tensor)
     return model
@@ -76,12 +84,17 @@ def main(mixing_matrix_path, output_file):
     # Convert labels to one-hot encoding
     train_labels = to_categorical(train_labels, 10)
     test_labels = to_categorical(test_labels, 10)
-
-    # batch_size = 64
-    # train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    datagen = ImageDataGenerator(
+        rotation_range=15,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        horizontal_flip=True,
+        zoom_range=0.2
+    )
     num_agents = 10
     big_batch_size = 64 * num_agents
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
+    # train_dataset = datagen.flow(train_images, train_labels, batch_size=big_batch_size)
+    # train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
     
     test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
     test_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
@@ -91,21 +104,28 @@ def main(mixing_matrix_path, output_file):
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
 
-    # model = create_resnet50_cifar10()
-    # total_params = model.count_params()
-    # print(f'Total Parameters: {total_params}')
-    epochs = 50
+    epochs = 200
     num_agents = 10
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
     models = [create_resnet50_cifar10() for _ in range(num_agents)]
-    optimizers = [tf.keras.optimizers.Adam(learning_rate=0.02) for _ in range(num_agents)] # 0.001 learning rate
+    # optimizers = [tf.keras.optimizers.Adam(learning_rate=0.01) for _ in range(num_agents)] # 0.001 learning rate
+    # initial_learning_rate = 0.02
+    # lr_schedule = ExponentialDecay(
+    #     initial_learning_rate,
+    #     decay_steps=100000,
+    #     decay_rate=0.96,
+    #     staircase=True)
+
+    optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
     train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {
         'train_loss': [[] for _ in range(num_agents)],
         'test_accuracy': [[] for _ in range(num_agents)]
     }
+
+    steps_per_epoch = len(train_images) // big_batch_size
     for epoch in range(epochs):
         # Training loop for one epoch
         for train_loss, train_accuracy, test_loss, test_accuracy in zip(train_losses, train_accuracies, test_losses, test_accuracies):
@@ -114,7 +134,8 @@ def main(mixing_matrix_path, output_file):
             test_loss.reset_states()
             test_accuracy.reset_states()
         start_time = time.time()
-        for big_batch_images, big_batch_labels in train_dataset:
+        for _ in range(steps_per_epoch):
+            big_batch_images, big_batch_labels = next(datagen.flow(train_images, train_labels, batch_size=big_batch_size))
             train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
         for test_batch_images, test_batch_labels in test_dataset:
             test_step_dpsgd(test_batch_images, test_batch_labels, models, loss_fn, test_losses, test_accuracies)
@@ -122,14 +143,8 @@ def main(mixing_matrix_path, output_file):
         # Print training loss and accuracy
         for i in range(num_agents):
             metrics_history['train_loss'][i].append(train_losses[i].result().numpy())
-            metrics_history['test_accuracy'][i].append(test_accuracies[i].result().numpy())
+            metrics_history['test_accuracy'][i].append(train_accuracies[i].result().numpy())
             print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {test_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
-
-    # After training is complete, save the model weights
-    # for i, model in enumerate(models):
-    #     model_weights_path = f"./model_weights/model_{i+1}_weights_epoch_{epochs}.tf"
-    #     model.save_weights(model_weights_path)
-    #     metrics_history['model_weights_paths'][i] = model_weights_path
 
     with open(output_file, 'wb') as file:
         pickle.dump(metrics_history, file)

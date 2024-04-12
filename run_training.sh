@@ -5,9 +5,9 @@ PYTHON_SCRIPT_PATH="plot.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_ring.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_random.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_prim.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_ring.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_random.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_prim.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_clique.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRRhoEw_4.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRRhoEw_3.pkl"
@@ -23,7 +23,7 @@ MIXING_MATRICES=(
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_clique.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_prim.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_random.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_ring.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_ring.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_BoydGreedy_1.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_SCA23_1.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_SDRLambda2Ew_1.pkl"
@@ -31,7 +31,7 @@ MIXING_MATRICES=(
 )
 
 # Define an array with the GPU IDs you want to use
-GPUS=(0 1 2)
+GPUS=(0)
 
 # Ensure the GPUs array is not longer than the MIXING_MATRICES array
 if [ ${#GPUS[@]} -gt ${#MIXING_MATRICES[@]} ]; then

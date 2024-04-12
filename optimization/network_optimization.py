@@ -3,6 +3,80 @@ from utils import adjust_matrix, edges_to_delay_map_with_reversed, map_overlay_t
 import cvxpy as cp
 import numpy as np
 
+def optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, undelay_network, link_capacity_map):
+    underlay_links = list(undelay_network.edges)
+    overlay_nodes = fully_connected_overlay.nodes
+    overlay_links = []
+    # Populate the undirected_links list
+    for link in fully_connected_overlay.edges():
+        overlay_links.append(link)  # Add original direction
+        overlay_links.append(link[::-1])  # Add reverse direction
+
+    H=[]
+    for source, destinations, data_size in multicast_demands:
+        for destination in destinations:
+            H.append((source, destination, data_size))
+
+    link_delay_map, link_path_map = edges_to_delay_map_with_reversed(fully_connected_overlay.edges(data=True))
+
+    overlay_links_map = map_overlay_to_underlay_edges(undelay_network, overlay_links, link_path_map)
+    # Initialize Gurobi model
+    m = Model("tau_optimization_direct")
+    m.setParam('TimeLimit', 100)
+    M = 1000000  # unit: bits per second
+
+    # Define decision variables
+    f = {}  # Flow variable for the amount of demand on a link
+    f_inv = {} 
+    # d = {}  # Continuous variable representing the demand satisfaction level
+    # d_inv = {}  # Inverse of d, for modeling purposes
+    tau = m.addVar(vtype=GRB.CONTINUOUS, name="tau")
+    m.setObjective(tau, GRB.MINIMIZE)
+
+    # Populate demand pairs and their data sizes
+    H = [(source, destination, data_size) for source, destinations, data_size in multicast_demands for destination in destinations]
+
+    for h in multicast_demands:
+        source, T_h, data_size = h
+        # Convert destinations to a frozenset for immutability and to ensure uniqueness
+        h_index = (source, frozenset(T_h), data_size)
+        # d[h_index] = m.addVar(vtype=GRB.CONTINUOUS, name=f"d_{h_index}", lb=0, ub=M)
+        # d_inv[h_index] = m.addVar(vtype=GRB.CONTINUOUS, name=f"inv_{h_index}")
+
+        # Create the inverse constraint for d and d_inv
+        # m.addConstr(d_inv[h_index] * d[h_index] == 1, name=f"inv_constraint_{h_index}")
+
+        # Iterate through each overlay link and create binary variables z and flow variables f for each demand
+        for i, j in overlay_links:
+            link_index = (i, j)
+            f[(link_index, h_index)] = m.addVar(vtype=GRB.CONTINUOUS, name=f"f_{link_index}_{h_index}", lb=0)
+            f_inv[(link_index, h_index)] = m.addVar(vtype=GRB.CONTINUOUS, name=f"f_inv_{link_index}_{h_index}")
+            m.addConstr(f_inv[(link_index, h_index)] * f[(link_index, h_index)] == 1, name=f"finv_constraint_{h_index}")
+
+
+    # Constraints
+    # (5b) Tau is an upper bound on the completion time of the slowest flow
+    for s_h, T_h, k_h in multicast_demands:
+        for k in T_h:
+            m.addConstr(tau >= k_h * f_inv[(int(s_h), k), (s_h, frozenset(T_h), k_h)] + quicksum(link_delay_map[s_h, k] for k in T_h))
+
+    # (5c) The total traffic rate imposed by the overlay on any underlay link is within its capacity
+    for underlay_link in underlay_links:
+        if overlay_links_map[underlay_link]:
+            m.addConstr(quicksum(f[ovelaylink, (s_h, frozenset(T_h), k_h)] 
+                                 for ovelaylink in overlay_links_map[underlay_link] for s_h, T_h, k_h in multicast_demands) <= link_capacity_map[tuple(sorted(underlay_link))])
+
+
+    m.optimize()
+
+    # Check and print the optimal solution
+    if m.status == GRB.OPTIMAL:
+        print('Optimal value of tau:', m.getVarByName("tau").X)
+    else:
+        print('No optimal solution found')
+
+    return m.getVarByName("tau").X
+
 
 def optimize_network_route_rate(fully_connected_overlay, multicast_demands, undelay_network, link_capacity_map):
     underlay_links = list(undelay_network.edges)
