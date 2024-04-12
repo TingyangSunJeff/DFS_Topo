@@ -49,13 +49,8 @@ def plot_metrics_time(metrics, title, ylabel, time_per_epoch):
     benchmark = ["Roofnet_ring", "Roofnet_random", "Roofnet_clique", "Roofnet_prim"]
     for idx, (key, metric) in enumerate(metrics.items()):
         # Calculate cumulative time for each epoch for the current strategy
-        tau = 0
-        if key not in benchmark :
-            tau = time_per_epoch[key] - 100 
-        else:
-            tau = time_per_epoch[key]
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * (tau/60)
+        time = epochs * (time_per_epoch[key]/60)
         plt.plot(time, metric, label=os.path.basename(file_paths[idx]).split('.')[0])
     
     plt.title(title)
