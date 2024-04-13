@@ -110,14 +110,16 @@ def main(mixing_matrix_path, output_file):
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
     models = [create_resnet50_cifar10() for _ in range(num_agents)]
 
-    # initial_learning_rate = 0.02
-    # lr_schedule = ExponentialDecay(
-    #     initial_learning_rate,
-    #     decay_steps=100000,
-    #     decay_rate=0.96,
-    #     staircase=True)
+    initial_learning_rate = 0.02
+    lr_schedule = ExponentialDecay(
+        initial_learning_rate,
+        decay_steps=100000,
+        decay_rate=0.96,
+        staircase=True)
+    
     # optimizers = [tf.keras.optimizers.Adam(learning_rate=0.001) for _ in range(num_agents)]
-    optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
+    # optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
+    optimizers = [SGD(learning_rate=lr_schedule) for _ in range(num_agents)]
     train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {
