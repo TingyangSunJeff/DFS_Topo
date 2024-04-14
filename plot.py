@@ -10,6 +10,8 @@ from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.optimizers.schedules import ExponentialDecay
+from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
+
 import time
 import numpy as np
 import pickle
@@ -95,7 +97,6 @@ def main(mixing_matrix_path, output_file):
     big_batch_size = 64 * num_agents
     # train_dataset = datagen.flow(train_images, train_labels, batch_size=big_batch_size)
     train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
-    
     test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
     test_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     test_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
@@ -104,23 +105,25 @@ def main(mixing_matrix_path, output_file):
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
 
-    epochs = 50
+    epochs = 60
     num_agents = 10
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()
     models = [create_resnet50_cifar10() for _ in range(num_agents)]
 
-    initial_learning_rate = 0.02
-    lr_schedule = ExponentialDecay(
-        initial_learning_rate,
-        decay_steps=100000,
-        decay_rate=5e-4,
-        staircase=True
-    )
     
+    # Set initial learning rate
+    # initial_learning_rate = 0.8
+
+    # Define the boundaries of epochs where the learning rate changes
+    # Assuming one step is one epoch
+    # boundaries = [30, 45]
+    # values = [initial_learning_rate, initial_learning_rate / 10, initial_learning_rate / 100]
+    # lr_schedule = PiecewiseConstantDecay(boundaries, values)
+
     # optimizers = [tf.keras.optimizers.Adam(learning_rate=0.001) for _ in range(num_agents)]
-    # optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
-    optimizers = [SGD(learning_rate=lr_schedule, momentum=0.9, nesterov=True) for _ in range(num_agents)]
+    optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
+    # optimizers = [SGD(learning_rate=lr_schedule, momentum=0.9, nesterov=True) for _ in range(num_agents)]
     train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {

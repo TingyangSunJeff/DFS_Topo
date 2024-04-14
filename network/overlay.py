@@ -29,6 +29,7 @@ def create_fully_connected_overlay_network(underlay, overlay_nodes):
     # Initialize as a fully connected network
     for i in range(len(overlay_nodes)):
         for j in range(i + 1, len(overlay_nodes)):
+            # find_shortest_path_with_delay(underlay,overlay_nodes[1],overlay_nodes[17])
             path, path_delay = find_shortest_path_with_delay(underlay,overlay_nodes[i],overlay_nodes[j])
             underlay_routing_map[f"{overlay_nodes[i]}_{overlay_nodes[j]}"] = path
             # path_reverse, path_delay_reverse = find_shortest_path_with_delay(underlay,overlay_nodes[j],overlay_nodes[i])
