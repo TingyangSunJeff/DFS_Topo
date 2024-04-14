@@ -5,20 +5,15 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_prim.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_ring.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_clique.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_4.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_3.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_3.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SCA23_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_BoydGreedy_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl"
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl"
 ]
 
 

@@ -23,7 +23,7 @@ def optimize_network_route_rate_direct(fully_connected_overlay, multicast_demand
     # Initialize Gurobi model
     m = Model("tau_optimization_direct")
     m.setParam('TimeLimit', 100)
-    M = 1000000  # unit: bits per second
+    M = 0.4 * 1.e+9  # unit: bits per second
 
     # Define decision variables
     f = {}  # Flow variable for the amount of demand on a link

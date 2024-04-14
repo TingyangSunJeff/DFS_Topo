@@ -57,8 +57,6 @@ def process_files_and_generate_matrices(file_paths, fully_connected_overlay):
         for matrix_idx, matrix in enumerate(adjacency_matrices):
             matrix = np.array(matrix)  # Ensure it's a NumPy array for processing
             links = process_adjacency_matrix(matrix)
-            # if base_name == "IAB_CIFAR10_SCA23":
-            #     print("======",links)
             # Assuming optimize_K_mixing_matrix is defined elsewhere and takes 'links' as input
             _, mixing_matrix_random = optimize_K_mixing_matrix(fully_connected_overlay, links)
             file_key = f"{base_name}_{matrix_idx + 1}"
@@ -85,12 +83,11 @@ def main():
 
     # Sort nodes by their degree, resulting in a list of tuples (node, degree)
     sorted_nodes_by_degree = sorted(node_degrees.items(), key=lambda x: x[1])
-    print(sorted_nodes_by_degree)
+    # print(sorted_nodes_by_degree)
     # Select the top N nodes with the lowest degrees
     overlay_nodes = []
     if loaded_network_settings[network_type]["set_input"]:
         overlay_nodes = [1, 2, 8, 9, 10, 11, 12, 15, 16, 17]
-        print("=======================")
     else:
         overlay_nodes = [node for node, degree in 
                         sorted_nodes_by_degree[:loaded_network_settings[network_type]["Number_of_overlay_nodes"]]]
@@ -99,6 +96,7 @@ def main():
     # print(overlay_nodes)
     # Create the underlay network from the given edges
     underlay = create_underlay_network(num_nodes, edges)
+    # print(underlay.edges)
     # Create a fully connected overlay network from a subset of nodes
     fully_connected_overlay, underlay_routing_map = create_fully_connected_overlay_network(underlay, overlay_nodes)
     # print(underlay_routing_map)
@@ -106,29 +104,35 @@ def main():
     #     pickle.dump(underlay_routing_map, file)
     # Example: Activate links using a random spanning tree algorithm
 
-    # (11)
+    # # (11)
 
-    activated_links = activate_links_random_spanning_tree(fully_connected_overlay)
-    activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
-    activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
-    # with open(f'./Ea/IAB_ring.pkl', 'wb') as file:
-    #     pickle.dump(activated_links_ring, file)
-    # with open(f'./Ea/IAB_prim.pkl', 'wb') as file:
-    #     pickle.dump(activated_links_prim, file)
-    
-    optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
-    optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
-    optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
-    mixing_matrices = {
-        # 'random.pkl': mixing_matrix_random,
-        'ring.pkl': mixing_matrix_ring,
-        'clique.pkl': mixing_matrix_clique,
-        'prim.pkl': mixing_matrix_prim,
-    }
-    for filename, matrix in mixing_matrices.items():
-        with open(f'./mixing_matrix/mixing_matrix_{network_type}_CIFAR10_{filename}', 'wb') as file:
-            pickle.dump(matrix, file)
-    # Save each mixing matrix in a separate file with a descriptive name
+    # activated_links = activate_links_random_spanning_tree(fully_connected_overlay)
+    # activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
+    # activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
+    # print("~~~~~~~~~~~~~", activated_links_prim)
+    # # with open(f'./Ea/IAB_ring.pkl', 'wb') as file:
+    # #     pickle.dump(activated_links_ring, file)
+    # # with open(f'./Ea/IAB_prim.pkl', 'wb') as file:
+    # #     pickle.dump(activated_links_prim, file)
+    # Ea = []
+    # # Populate the undirected_links list
+    # for link in activated_links_prim:
+    #     Ea.append(link)  # Add original direction
+    #     Ea.append(link[::-1])  # Add reverse direction
+    # print(Ea)
+    # optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
+    # optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
+    # optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, Ea)
+    # mixing_matrices = {
+    #     # 'random.pkl': mixing_matrix_random,
+    #     'ring.pkl': mixing_matrix_ring,
+    #     'clique.pkl': mixing_matrix_clique,
+    #     'prim.pkl': mixing_matrix_prim,
+    # }
+    # for filename, matrix in mixing_matrices.items():
+    #     with open(f'./mixing_matrix/mixing_matrix_{network_type}_CIFAR10_{filename}', 'wb') as file:
+    #         pickle.dump(matrix, file)
+    # # Save each mixing matrix in a separate file with a descriptive name
 
     # load proposed Ea
     file_paths = [
@@ -143,20 +147,26 @@ def main():
         # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_clique.pkl"
     ]  # Add your file paths here
     Ea_diction, tau_diction = process_files_and_generate_matrices(file_paths, fully_connected_overlay)
-    # print(tau_diction)
-    # # # # baseline Ea
-    # Ea_diction ={}
+    # # print(tau_diction)
+    # # # # # baseline Ea
+    # # Ea_diction ={}
     benchmark_list = [f"{network_type}_CIFAR10_ring", f"{network_type}_CIFAR10_random", f"{network_type}_CIFAR10_clique", f"{network_type}_CIFAR10_prim"]
+    
     for key in benchmark_list:
         if key == f"{network_type}_CIFAR10_clique":
-            Ea_diction[key] = list(fully_connected_overlay.edges)
+            Ea_diction[key] = [link for edge in fully_connected_overlay.edges for link in (edge, edge[::-1])]
         # elif key == f"{network_type}_CIFAR10_random":
-            # Ea_diction[key] = activate_links_random_spanning_tree(fully_connected_overlay)
+        #     links = activate_links_random_spanning_tree(fully_connected_overlay)
+        #     Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
         elif key == f"{network_type}_CIFAR10_ring":
-            Ea_diction[key] = activate_links_ring_topology(fully_connected_overlay)
+            links = activate_links_ring_topology(fully_connected_overlay)
+            Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
         elif key == f"{network_type}_CIFAR10_prim":
-            Ea_diction[key] = activate_links_prim_topology(fully_connected_overlay)
-    # print(Ea_diction)
+            links = activate_links_prim_topology(fully_connected_overlay)
+            # Ea_diction[key] = links
+            Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
+    print(Ea_diction)
+
 
     # Draw the networks and their respective trees/topologies
     # draw_underlay_network_with_mst(underlay, mst)
@@ -175,16 +185,16 @@ def main():
     # # print("Mixing matrix from main:\n", mixing_matrix)
 
     # # # # (5)
-    # output_dic = {} # topo : tau
-    # data_size = loaded_network_settings["resnet"] * 32 # unit:bit tensorflow use float32 datatype
-    # for key, Ea in Ea_diction.items():
-    #     multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
-    #     # tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-    #     tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-    #     output_dic[key] = tau # unit:seconds
-    # print(output_dic)
-    # with open(f'tau_results_{network_type}.pkl', 'wb') as file:
-    #     pickle.dump(output_dic, file)
+    output_dic = {} # topo : tau
+    data_size = loaded_network_settings["resnet"] * 32 # unit:bit tensorflow use float32 datatype
+    for key, Ea in Ea_diction.items():
+        multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
+        # tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+        tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+        output_dic[key] = tau # unit:seconds
+    print(output_dic)
+    with open(f'tau_results_{network_type}.pkl', 'wb') as file:
+        pickle.dump(output_dic, file)
 
 
 if __name__ == "__main__":
