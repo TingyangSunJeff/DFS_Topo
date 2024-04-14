@@ -114,18 +114,18 @@ def main():
     #     pickle.dump(activated_links_prim, file)
     
     # optimal_rho_tilde, mixing_matrix_random = optimize_K_mixing_matrix(fully_connected_overlay, activated_links)
-    optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
-    optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
-    optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
-    mixing_matrices = {
-        # 'random.pkl': mixing_matrix_random,
-        'ring.pkl': mixing_matrix_ring,
-        'clique.pkl': mixing_matrix_clique,
-        'prim.pkl': mixing_matrix_prim,
-    }
-    for filename, matrix in mixing_matrices.items():
-        with open(f'./mixing_matrix/mixing_matrix_{network_type}_{filename}', 'wb') as file:
-            pickle.dump(matrix, file)
+    # optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
+    # optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
+    # optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
+    # mixing_matrices = {
+    #     # 'random.pkl': mixing_matrix_random,
+    #     'ring.pkl': mixing_matrix_ring,
+    #     'clique.pkl': mixing_matrix_clique,
+    #     'prim.pkl': mixing_matrix_prim,
+    # }
+    # for filename, matrix in mixing_matrices.items():
+    #     with open(f'./mixing_matrix/mixing_matrix_{network_type}_CIFAR10_{filename}', 'wb') as file:
+    #         pickle.dump(matrix, file)
     # Save each mixing matrix in a separate file with a descriptive name
 
     # load proposed Ea
@@ -144,17 +144,17 @@ def main():
     # print(tau_diction)
     # # # baseline Ea
     # Ea_diction ={}
-    # benchmark_list = ["Roofnet_CIFAR10_ring", "Roofnet_CIFAR10_random", "Roofnet_CIFAR10_clique", "Roofnet_CIFAR10_prim"]
-    # for key in benchmark_list:
-    #     if key == "Roofnet_CIFAR10_clique":
-    #         Ea_diction[key] = list(fully_connected_overlay.edges)
-    #     elif key == "Roofnet_CIFAR10_random":
-    #         Ea_diction[key] = activate_links_random_spanning_tree(fully_connected_overlay)
-    #     elif key == "Roofnet_CIFAR10_ring":
-    #         Ea_diction[key] = activate_links_ring_topology(fully_connected_overlay)
-    #     elif key == "Roofnet_CIFAR10_prim":
-    #         Ea_diction[key] = activate_links_prim_topology(fully_connected_overlay)
-    # print(Ea_diction)
+    benchmark_list = [f"{network_type}_CIFAR10_ring", f"{network_type}_CIFAR10_random", f"{network_type}_CIFAR10_clique", f"{network_type}_CIFAR10_prim"]
+    for key in benchmark_list:
+        if key == f"{network_type}_CIFAR10_clique":
+            Ea_diction[key] = list(fully_connected_overlay.edges)
+        # elif key == f"{network_type}_CIFAR10_random":
+            # Ea_diction[key] = activate_links_random_spanning_tree(fully_connected_overlay)
+        elif key == f"{network_type}_CIFAR10_ring":
+            Ea_diction[key] = activate_links_ring_topology(fully_connected_overlay)
+        elif key == f"{network_type}_CIFAR10_prim":
+            Ea_diction[key] = activate_links_prim_topology(fully_connected_overlay)
+    print(Ea_diction)
 
     # Draw the networks and their respective trees/topologies
     # draw_underlay_network_with_mst(underlay, mst)
@@ -173,16 +173,16 @@ def main():
     # # print("Mixing matrix from main:\n", mixing_matrix)
 
     # # # # (5)
-    # output_dic = {} # topo : tau
-    # data_size = loaded_network_settings["resnet"] * 32 # unit:bit tensorflow use float32 datatype
-    # for key, Ea in Ea_diction.items():
-    #     multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
-    #     # tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-    #     tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-    #     output_dic[key] = tau # unit:seconds
-    # print(output_dic)
-    # with open('tau_results.pkl', 'wb') as file:
-    #     pickle.dump(output_dic, file)
+    output_dic = {} # topo : tau
+    data_size = loaded_network_settings["resnet"] * 32 # unit:bit tensorflow use float32 datatype
+    for key, Ea in Ea_diction.items():
+        multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
+        # tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+        tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+        output_dic[key] = tau # unit:seconds
+    print(output_dic)
+    with open(f'tau_results_{network_type}.pkl', 'wb') as file:
+        pickle.dump(output_dic, file)
 
 
 if __name__ == "__main__":

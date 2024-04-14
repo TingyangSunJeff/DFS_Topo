@@ -114,12 +114,13 @@ def main(mixing_matrix_path, output_file):
     lr_schedule = ExponentialDecay(
         initial_learning_rate,
         decay_steps=100000,
-        decay_rate=0.96,
-        staircase=True)
+        decay_rate=5e-4,
+        staircase=True
+    )
     
     # optimizers = [tf.keras.optimizers.Adam(learning_rate=0.001) for _ in range(num_agents)]
     # optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
-    optimizers = [SGD(learning_rate=lr_schedule) for _ in range(num_agents)]
+    optimizers = [SGD(learning_rate=lr_schedule, momentum=0.9, nesterov=True) for _ in range(num_agents)]
     train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
     train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
     metrics_history = {

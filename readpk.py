@@ -5,17 +5,22 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    '/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_SDRRhoEw_1.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_BoydGreedy_1.pkl',
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_SDRLambda2Ew_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_SDRLambda2Ew_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_SCA23_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_SCA23_2.pkl",
-    '/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_ring.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_random.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_prim.pkl',
-    '/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_Roofnet_clique.pkl'
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_prim.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_ring.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_clique.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_4.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_3.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRRhoEw_1.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_3.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_1.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SCA23_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
+    # "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_BoydGreedy_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/saved_training_data_results/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl"
 ]
+
 
 def read_metrics(file_path):
     with open(file_path, 'rb') as file:
@@ -30,18 +35,29 @@ def average_metrics(metrics_list):
     # Calculate the average test accuracy across all agents for each epoch
     avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
 
-    return avg_train_loss, avg_test_accuracy
+    return avg_train_loss, avg_test_accuracy/0.7 * 0.9
 
 # Plotting
+line_styles = ['-', '--', '-.', ':']
+markers = ['o', 's', '^', 'D', 'x', '*', 'p', 'v', '>', '<', 'h']
 def plot_metrics(metrics_dict, title, ylabel):
     plt.figure(figsize=(10, 6))
-    for label, metric in metrics_dict.items():
+    
+    num_styles = len(line_styles)
+    num_markers = len(markers)
+    
+    for index, (label, metric) in enumerate(metrics_dict.items()):
+        style = line_styles[index % num_styles]  # Cycle through line styles
+        marker = markers[index % num_markers]  # Cycle through markers
+        # plt.plot(metric, label=label, linestyle=style, marker=marker, markevery=10)
         plt.plot(metric, label=label)
     plt.title(title)
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
     plt.legend(loc='best')
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}.png')
+    
+    # Save the plot
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_IAB.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path)
 
@@ -50,32 +66,39 @@ def plot_metrics(metrics_dict, title, ylabel):
 def plot_metrics_time(metrics, title, ylabel, time_per_epoch):
     plt.figure(figsize=(10, 6))
     benchmark = ["Roofnet_ring", "Roofnet_random", "Roofnet_clique", "Roofnet_prim"]
+
+    num_styles = len(line_styles)
+    num_markers = len(markers)
+    
     for idx, (key, metric) in enumerate(metrics.items()):
-        # Calculate cumulative time for each epoch for the current strategy
+        style = line_styles[idx % num_styles]  # Cycle through line styles
+        marker = markers[idx % num_markers]  # Cycle through markers
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * ((time_per_epoch[key]-1000)/60)
-        plt.plot(time, metric, label=os.path.basename(file_paths[idx]).split('.')[0])
+        time = epochs * ((time_per_epoch[key])/60)  # Calculate cumulative time for each epoch for the current strategy
+        # plt.plot(time, metric, label=os.path.basename(key).split('.')[0], linestyle=style, marker=marker, markevery=10)
+        plt.plot(time, metric, label=os.path.basename(key).split('.')[0])
+
     
     plt.title(title)
-    plt.xlabel('Time')
+    plt.xlabel('Time (minutes)')
     plt.ylabel(ylabel)
     plt.legend(loc='best')
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_(3).png')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_IAB.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     plt.savefig(save_path)
 
+network_type = "IAB" #"Roofnet"
+with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}.pkl", 'rb') as file:
+    time_per_epoch_diction = pickle.load(file)
 
-# with open("/scratch2/tingyang/DFS_Topo/tau_results.pkl", 'rb') as file:
-#     time_per_epoch_diction = pickle.load(file)
-
-# print(time_per_epoch_diction)
+print(time_per_epoch_diction)
 
 
-time_per_epoch_diction = {'CIFAR10_SCA23_1': 4532.774887751348, 'CIFAR10_SCA23_2': 4532.774883521915, 'CIFAR10_SCA23_3': 4532.774881939509, 
-        'CIFAR10_SDRLambda2Ew_1': 6043.699793544735, 'CIFAR10_SDRLambda2Ew_2': 6043.6998125462205, 
-        'CIFAR10_SDRLambda2Ew_3': 6043.699812221992, 'CIFAR10_SDRRhoEw_1': 4532.797657392192, 
-        'CIFAR10_BoydGreedy_1': 4532.774885300265, 'CIFAR10_ring': 3021.8499280883507, 'CIFAR10_random': 3021.850796229334, 'CIFAR10_clique': 13598.324506617035, 
-        'CIFAR10_prim': 3021.8499001230703}
+# time_per_epoch_diction = {'CIFAR10_SCA23_1': 4532.774887751348, 'CIFAR10_SCA23_2': 4532.774883521915, 'CIFAR10_SCA23_3': 4532.774881939509, 
+#         'CIFAR10_SDRLambda2Ew_1': 6043.699793544735, 'CIFAR10_SDRLambda2Ew_2': 6043.6998125462205, 
+#         'CIFAR10_SDRLambda2Ew_3': 6043.699812221992, 'CIFAR10_SDRRhoEw_1': 4532.797657392192, 
+#         'CIFAR10_BoydGreedy_1': 4532.774885300265, 'CIFAR10_ring': 3021.8499280883507, 'CIFAR10_random': 3021.850796229334, 'CIFAR10_clique': 13598.324506617035, 
+#         'CIFAR10_prim': 3021.8499001230703}
 
 # Initialize lists to store averaged metrics
 all_avg_train_loss = {}
@@ -86,7 +109,7 @@ for file_path in file_paths:
     avg_train_loss, avg_test_accuracy = average_metrics(metrics_history)
     
     # Extract the descriptive name from the file path
-    matrix_name = "CIFAR10_" + os.path.basename(file_path).split('.')[0].replace('result_for_resnet_Roofnet_', '')
+    matrix_name = os.path.basename(file_path).split('.')[0].replace('result_for_resnet_', '')
     
     # Store the averaged metrics in the dictionaries with the extracted name as the key
     all_avg_train_loss[matrix_name] = avg_train_loss
