@@ -46,52 +46,126 @@ def average_metrics(metrics_list):
 # Plotting
 line_styles = ['-', '--', '-.', ':']
 markers = ['o', 's', '^', 'D', 'x', '*', 'p', 'v', '>', '<', 'h']
+# def plot_metrics(metrics_dict, title, ylabel, network_type):
+#     plt.figure(figsize=(10, 6))
+    
+#     num_styles = len(line_styles)
+#     num_markers = len(markers)
+    
+#     for index, (label, metric) in enumerate(metrics_dict.items()):
+#         style = line_styles[index % num_styles]  # Cycle through line styles
+#         marker = markers[index % num_markers]  # Cycle through markers
+#         # plt.plot(metric, label=label, linestyle=style, marker=marker, markevery=10)
+#         plt.plot(metric, label=categorized_results[label])
+#     plt.title(title)
+#     plt.xlabel('Epoch')
+#     plt.ylabel(ylabel)
+#     plt.legend(loc='best')
+    
+#     # Save the plot
+#     save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.png')
+#     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+#     plt.savefig(save_path)
+
 def plot_metrics(metrics_dict, title, ylabel, network_type):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 8))  # Bigger figure size for better readability
     
-    num_styles = len(line_styles)
-    num_markers = len(markers)
-    
+    # Define styles and colors
+    line_styles = ['-', '--', '-.', ':']
+    markers = ['o', '^', 's', 'p', '*', 'D', 'x']
+    colors = plt.cm.viridis(np.linspace(0, 1, len(metrics_dict)))  # Use a colormap for consistent and distinct colors
+
+    # Plot each metric with unique style, marker, and color
     for index, (label, metric) in enumerate(metrics_dict.items()):
-        style = line_styles[index % num_styles]  # Cycle through line styles
-        marker = markers[index % num_markers]  # Cycle through markers
-        # plt.plot(metric, label=label, linestyle=style, marker=marker, markevery=10)
-        plt.plot(metric, label=categorized_results[label])
+        style = line_styles[index % len(line_styles)]  # Cycle through line styles
+        marker = markers[index % len(markers)]  # Cycle through markers
+        color = colors[index]  # Assign color from colormap
+        plt.plot(metric, label=categorized_results[label], linestyle=style, marker=marker, markevery=10, color=color)
+    
     plt.title(title)
     plt.xlabel('Epoch')
     plt.ylabel(ylabel)
-    plt.legend(loc='best')
     
+    # Improve the legend
+    plt.legend(title='Methods', loc='best', frameon=True, framealpha=0.8, facecolor='white')
+
+    # Add grid for better visual guidance
+    plt.grid(True, linestyle='--', alpha=0.5)
+    
+    # Optionally, set the axis limits if you know the expected range
+    # plt.xlim([0, max_epoch])
+    # plt.ylim([min_value, max_value])
+
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}_versionB.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
+    plt.savefig(save_path, dpi=300)  # Higher dpi for better image quality
 
 
-# Modify the plot_metrics function to plot against time
+# # Modify the plot_metrics function to plot against time
+# def plot_metrics_time(metrics, title, ylabel, time_per_epoch, network_type):
+#     plt.figure(figsize=(10, 6))
+#     benchmark = ["Roofnet_ring", "Roofnet_random", "Roofnet_clique", "Roofnet_prim"]
+
+#     num_styles = len(line_styles)
+#     num_markers = len(markers)
+    
+#     for idx, (key, metric) in enumerate(metrics.items()):
+#         style = line_styles[idx % num_styles]  # Cycle through line styles
+#         marker = markers[idx % num_markers]  # Cycle through markers
+#         epochs = np.arange(1, len(metric) + 1)
+#         time = epochs * ((time_per_epoch[key])/60)  # Calculate cumulative time for each epoch for the current strategy
+#         # plt.plot(time, metric, label=os.path.basename(key).split('.')[0], linestyle=style, marker=marker, markevery=10)
+#         plt.plot(time, metric, label=categorized_results[os.path.basename(key).split('.')[0]])
+
+    
+#     plt.title(title)
+#     plt.xlabel('Time (minutes)')
+#     plt.ylabel(ylabel)
+#     plt.legend(loc='best')
+#     save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.png')
+#     os.makedirs(os.path.dirname(save_path), exist_ok=True)
+#     plt.savefig(save_path)
+
+
+
 def plot_metrics_time(metrics, title, ylabel, time_per_epoch, network_type):
-    plt.figure(figsize=(10, 6))
-    benchmark = ["Roofnet_ring", "Roofnet_random", "Roofnet_clique", "Roofnet_prim"]
+    plt.figure(figsize=(12, 8))  # Larger size for better readability
 
-    num_styles = len(line_styles)
-    num_markers = len(markers)
-    
+    # Define styles, markers, and colors
+    line_styles = ['-', '--', '-.', ':']
+    markers = ['o', '^', 's', 'p', '*', 'D', 'x']
+    colors = plt.cm.viridis(np.linspace(0, 1, len(metrics)))  # Consistent and distinct colors
+
     for idx, (key, metric) in enumerate(metrics.items()):
-        style = line_styles[idx % num_styles]  # Cycle through line styles
-        marker = markers[idx % num_markers]  # Cycle through markers
+        style = line_styles[idx % len(line_styles)]  # Cycle through line styles
+        marker = markers[idx % len(markers)]  # Cycle through markers
+        color = colors[idx]  # Assign color from colormap
+        
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * ((time_per_epoch[key])/60)  # Calculate cumulative time for each epoch for the current strategy
-        # plt.plot(time, metric, label=os.path.basename(key).split('.')[0], linestyle=style, marker=marker, markevery=10)
-        plt.plot(time, metric, label=categorized_results[os.path.basename(key).split('.')[0]])
+        time = epochs * (time_per_epoch[key] / 60)  # Calculate cumulative time for each epoch
+        
+        plt.plot(time, metric, label=categorized_results[os.path.basename(key).split('.')[0]],
+                 linestyle=style, marker=marker, markevery=10, color=color)
 
-    
     plt.title(title)
     plt.xlabel('Time (minutes)')
     plt.ylabel(ylabel)
-    plt.legend(loc='best')
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.png')
+    plt.legend(title='Methods', loc='best', frameon=True, framealpha=0.8, facecolor='white')
+    plt.grid(True, linestyle='--', alpha=0.5)  # Grid for visual guidance
+
+    # Save the plot
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}_versionB.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
+    plt.savefig(save_path, dpi=300)  # Higher dpi for better image quality
+
+    # Show the plot (optional, useful if running interactively)
+    plt.show()
+
+
+
+
+
 
 network_type = "Roofnet" #"Roofnet"
 with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}.pkl", 'rb') as file:
