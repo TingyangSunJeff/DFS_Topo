@@ -4,46 +4,57 @@ import os
 import numpy as np
 
 
-network_type = "IAB" #"Roofnet"
+network_type = "Roofnet" #"Roofnet"
 
 # Define the file paths
-# file_paths = [
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
-# ]
 file_paths = [
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl"
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
 ]
+# file_paths = [
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl"
+# ]
+categorized_results = {
+    'SCA': 'Roofnet_CIFAR10_SCA23_1',
+    'Relaxation-lambda': 'Roofnet_CIFAR10_SDRLambda2Ew_1',
+    'Relaxation-rho': 'Roofnet_CIFAR10_SDRRhoEw_1',
+    'Greedy': 'Roofnet_CIFAR10_BoydGreedy_1',
+    'Ring': 'Roofnet_CIFAR10_ring',
+    'Clique': 'Roofnet_CIFAR10_clique',
+    'Prim': 'Roofnet_CIFAR10_prim'
+}
+
 # categorized_results = {
-#     'SCA': 'Roofnet_CIFAR10_SCA23_1',
-#     'Relaxation-lambda': 'Roofnet_CIFAR10_SDRLambda2Ew_1',
-#     'Relaxation-rho': 'Roofnet_CIFAR10_SDRRhoEw_1',
-#     'Greedy': 'Roofnet_CIFAR10_BoydGreedy_1',
-#     'Ring': 'Roofnet_CIFAR10_ring',
-#     'Clique': 'Roofnet_CIFAR10_clique',
-#     'Prim': 'Roofnet_CIFAR10_prim'
+#     'SCA': 'IAB_CIFAR10_SCA23_1',
+#     'Relaxation-lambda': 'IAB_CIFAR10_SDRLambda2Ew_2',
+#     'Relaxation-rho': 'IAB_CIFAR10_SDRRhoEw_2',
+#     'Greedy': 'IAB_CIFAR10_BoydGreedy_1',
+#     'Ring': 'IAB_CIFAR10_ring',
+#     'Clique': 'IAB_CIFAR10_clique',
+#     'Prim': 'IAB_CIFAR10_prim'
 # }
 
-categorized_results = {
-    'SCA': 'IAB_CIFAR10_SCA23_1',
-    'Relaxation-lambda': 'IAB_CIFAR10_SDRLambda2Ew_2',
-    'Relaxation-rho': 'IAB_CIFAR10_SDRRhoEw_2',
-    'Greedy': 'IAB_CIFAR10_BoydGreedy_1',
-    'Ring': 'IAB_CIFAR10_ring',
-    'Clique': 'IAB_CIFAR10_clique',
-    'Prim': 'IAB_CIFAR10_prim'
+dic_tau = {
+    "Greedy" : 4.7253*1e3/ (4.9152* 1e3),
+    "SCA" : 1.6063/1.6384,
+    'Relaxation-rho': 4.7261/4.9152,
+    "Relaxation-lambda": 6.3640/6.5536,
+    "Prim": 3.1801/3.2768,
+    "Ring": 3.1814/3.2768,
+    "Clique": 10.3371/14.746
 }
+
 def read_metrics(file_path):
     with open(file_path, 'rb') as file:
         metrics_history = pickle.load(file)
@@ -106,7 +117,7 @@ def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
 
     for idx, (key, metric) in enumerate(sorted_metrics.items()):
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * (time_per_epoch[categorized_results[key]] / 60)  # Calculate cumulative time for each epoch
+        time = epochs * ((time_per_epoch[categorized_results[key]] / 60) *  dic_tau[key])# Calculate cumulative time for each epoch
         
         plt.plot(time, metric, label=key, linestyle=line_style)
 
@@ -116,7 +127,7 @@ def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
     plt.grid(True)  # Grid for visual guidance
 
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.eps')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}_routing.eps')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     # plt.savefig(save_path)
     plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality

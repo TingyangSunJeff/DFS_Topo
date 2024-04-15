@@ -66,11 +66,11 @@ def plot_metrics(metrics_dict, ylabel, network_type):
     plt.grid(True)
 
     # Save the plot as an EPS file
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}_mnist.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}_mnist.eps')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
+    # plt.savefig(save_path)
 
-    # plt.savefig(save_path, format='eps', bbox_inches='tight')  # Specify format here to handle EPS
+    plt.savefig(save_path, format='eps', bbox_inches='tight')  # Specify format here to handle EPS
 
 
 def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
@@ -97,10 +97,10 @@ def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
     plt.grid(True)  # Grid for visual guidance
 
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}_mnist.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}_mnist.eps')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
-    # plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
+    # plt.savefig(save_path)
+    plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
 
     # Show the plot (optional, useful if running interactively)
 
