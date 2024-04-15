@@ -3,31 +3,47 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
+
+network_type = "IAB" #"Roofnet"
+
 # Define the file paths
+# file_paths = [
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
+# ]
 file_paths = [
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl"
 ]
+# categorized_results = {
+#     'SCA': 'Roofnet_CIFAR10_SCA23_1',
+#     'Relaxation-lambda': 'Roofnet_CIFAR10_SDRLambda2Ew_1',
+#     'Relaxation-rho': 'Roofnet_CIFAR10_SDRRhoEw_1',
+#     'Greedy': 'Roofnet_CIFAR10_BoydGreedy_1',
+#     'Ring': 'Roofnet_CIFAR10_ring',
+#     'Clique': 'Roofnet_CIFAR10_clique',
+#     'Prim': 'Roofnet_CIFAR10_prim'
+# }
 
 categorized_results = {
-    'Roofnet_CIFAR10_SCA23_1': "SCA", 
-    'Roofnet_CIFAR10_SCA23_2': "SCA", 
-    'Roofnet_CIFAR10_SDRLambda2Ew_1': "Relaxation-lambda", 
-    'Roofnet_CIFAR10_SDRLambda2Ew_2': "Relaxation-lambda", 
-    'Roofnet_CIFAR10_SDRRhoEw_1': "Relaxation-rho", 
-    'Roofnet_CIFAR10_BoydGreedy_1': "Greedy", 
-    'Roofnet_CIFAR10_ring': "Ring", 
-    'Roofnet_CIFAR10_clique': "Clique", 
-    'Roofnet_CIFAR10_prim': "Prim"
+    'SCA': 'IAB_CIFAR10_SCA23_1',
+    'Relaxation-lambda': 'IAB_CIFAR10_SDRLambda2Ew_2',
+    'Relaxation-rho': 'IAB_CIFAR10_SDRRhoEw_2',
+    'Greedy': 'IAB_CIFAR10_BoydGreedy_1',
+    'Ring': 'IAB_CIFAR10_ring',
+    'Clique': 'IAB_CIFAR10_clique',
+    'Prim': 'IAB_CIFAR10_prim'
 }
-
 def read_metrics(file_path):
     with open(file_path, 'rb') as file:
         metrics_history = pickle.load(file)
@@ -41,133 +57,72 @@ def average_metrics(metrics_list):
     # Calculate the average test accuracy across all agents for each epoch
     avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
 
-    return avg_train_loss, avg_test_accuracy/0.7 * 0.9
+    return avg_train_loss, avg_test_accuracy
 
 # Plotting
-line_styles = ['-', '--', '-.', ':']
-markers = ['o', 's', '^', 'D', 'x', '*', 'p', 'v', '>', '<', 'h']
-# def plot_metrics(metrics_dict, title, ylabel, network_type):
-#     plt.figure(figsize=(10, 6))
+# line_styles = ['-', '--', '-.', ':']
+# markers = ['o', 's', '^', 'D', 'x', '*', 'p', 'v', '>', '<', 'h']
+def plot_metrics(metrics_dict, ylabel, network_type):
+    plt.figure(figsize=(12, 8))
+    # Define a consistent style: solid lines for all plots
+    line_style = '-'
     
-#     num_styles = len(line_styles)
-#     num_markers = len(markers)
+    # Expected order of plots
+    order = ['Clique', 'Ring', 'Prim', 'SCA', 'Relaxation-rho', 'Relaxation-lambda', 'Greedy']
     
-#     for index, (label, metric) in enumerate(metrics_dict.items()):
-#         style = line_styles[index % num_styles]  # Cycle through line styles
-#         marker = markers[index % num_markers]  # Cycle through markers
-#         # plt.plot(metric, label=label, linestyle=style, marker=marker, markevery=10)
-#         plt.plot(metric, label=categorized_results[label])
-#     plt.title(title)
-#     plt.xlabel('Epoch')
-#     plt.ylabel(ylabel)
-#     plt.legend(loc='best')
+    # Sort the dictionary according to the desired plot order
+    sorted_metrics = {k: metrics_dict[categorized_results[k]] for k in order if categorized_results[k] in metrics_dict}
+    # Plot each metric with labels
+    for idx, (label, metric) in enumerate(sorted_metrics.items()):
+        plt.plot(metric, label=label, linestyle=line_style)
     
-#     # Save the plot
-#     save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.png')
-#     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-#     plt.savefig(save_path)
+    plt.xlabel('Epoch', fontsize=25)
+    plt.ylabel(ylabel, fontsize=25)
+    
+    # Place the legend
+    if sorted_metrics:  # Only call legend if there are labeled plots
+        plt.legend(loc='best', fontsize=25)
+    
+    plt.grid(True)
 
-def plot_metrics(metrics_dict, title, ylabel, network_type):
-    plt.figure(figsize=(12, 8))  # Bigger figure size for better readability
-    
-    # Define styles and colors
-    line_styles = ['-', '--', '-.', ':']
-    markers = ['o', '^', 's', 'p', '*', 'D', 'x']
-    colors = plt.cm.viridis(np.linspace(0, 1, len(metrics_dict)))  # Use a colormap for consistent and distinct colors
-
-    # Plot each metric with unique style, marker, and color
-    for index, (label, metric) in enumerate(metrics_dict.items()):
-        style = line_styles[index % len(line_styles)]  # Cycle through line styles
-        marker = markers[index % len(markers)]  # Cycle through markers
-        color = colors[index]  # Assign color from colormap
-        plt.plot(metric, label=categorized_results[label], linestyle=style, marker=marker, markevery=10, color=color)
-    
-    plt.title(title)
-    plt.xlabel('Epoch')
-    plt.ylabel(ylabel)
-    
-    # Improve the legend
-    plt.legend(title='Methods', loc='best', frameon=True, framealpha=0.8, facecolor='white')
-
-    # Add grid for better visual guidance
-    plt.grid(True, linestyle='--', alpha=0.5)
-    
-    # Optionally, set the axis limits if you know the expected range
-    # plt.xlim([0, max_epoch])
-    # plt.ylim([min_value, max_value])
-
-    # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}_versionB.png')
+    # Save the plot as an EPS file
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.eps')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path, dpi=300)  # Higher dpi for better image quality
+    # plt.savefig(save_path)
+    plt.savefig(save_path, format='eps', bbox_inches='tight')  # Specify format here to handle EPS
 
 
-# # Modify the plot_metrics function to plot against time
-# def plot_metrics_time(metrics, title, ylabel, time_per_epoch, network_type):
-#     plt.figure(figsize=(10, 6))
-#     benchmark = ["Roofnet_ring", "Roofnet_random", "Roofnet_clique", "Roofnet_prim"]
-
-#     num_styles = len(line_styles)
-#     num_markers = len(markers)
-    
-#     for idx, (key, metric) in enumerate(metrics.items()):
-#         style = line_styles[idx % num_styles]  # Cycle through line styles
-#         marker = markers[idx % num_markers]  # Cycle through markers
-#         epochs = np.arange(1, len(metric) + 1)
-#         time = epochs * ((time_per_epoch[key])/60)  # Calculate cumulative time for each epoch for the current strategy
-#         # plt.plot(time, metric, label=os.path.basename(key).split('.')[0], linestyle=style, marker=marker, markevery=10)
-#         plt.plot(time, metric, label=categorized_results[os.path.basename(key).split('.')[0]])
-
-    
-#     plt.title(title)
-#     plt.xlabel('Time (minutes)')
-#     plt.ylabel(ylabel)
-#     plt.legend(loc='best')
-#     save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.png')
-#     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-#     plt.savefig(save_path)
-
-
-
-def plot_metrics_time(metrics, title, ylabel, time_per_epoch, network_type):
+def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
     plt.figure(figsize=(12, 8))  # Larger size for better readability
 
     # Define styles, markers, and colors
-    line_styles = ['-', '--', '-.', ':']
-    markers = ['o', '^', 's', 'p', '*', 'D', 'x']
-    colors = plt.cm.viridis(np.linspace(0, 1, len(metrics)))  # Consistent and distinct colors
+    line_style = '-'
+    
+    # Expected order of plots
+    order = ['Clique', 'Ring', 'Prim', 'SCA', 'Relaxation-rho', 'Relaxation-lambda', 'Greedy']
+    
+    # Sort the dictionary according to the desired plot order
+    sorted_metrics = {k: metrics[categorized_results[k]] for k in order if categorized_results[k] in metrics}
 
-    for idx, (key, metric) in enumerate(metrics.items()):
-        style = line_styles[idx % len(line_styles)]  # Cycle through line styles
-        marker = markers[idx % len(markers)]  # Cycle through markers
-        color = colors[idx]  # Assign color from colormap
-        
+    for idx, (key, metric) in enumerate(sorted_metrics.items()):
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * (time_per_epoch[key] / 60)  # Calculate cumulative time for each epoch
+        time = epochs * (time_per_epoch[categorized_results[key]] / 60)  # Calculate cumulative time for each epoch
         
-        plt.plot(time, metric, label=categorized_results[os.path.basename(key).split('.')[0]],
-                 linestyle=style, marker=marker, markevery=10, color=color)
+        plt.plot(time, metric, label=key, linestyle=line_style)
 
-    plt.title(title)
-    plt.xlabel('Time (minutes)')
-    plt.ylabel(ylabel)
-    plt.legend(title='Methods', loc='best', frameon=True, framealpha=0.8, facecolor='white')
-    plt.grid(True, linestyle='--', alpha=0.5)  # Grid for visual guidance
+    plt.xlabel('Time (minutes)', fontsize=25)
+    plt.ylabel(ylabel, fontsize=25)
+    plt.legend(loc='best', fontsize=25)
+    plt.grid(True)  # Grid for visual guidance
 
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}_versionB.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.eps')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path, dpi=300)  # Higher dpi for better image quality
+    # plt.savefig(save_path)
+    plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
 
     # Show the plot (optional, useful if running interactively)
-    plt.show()
 
-
-
-
-
-
-network_type = "Roofnet" #"Roofnet"
 with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}.pkl", 'rb') as file:
     time_per_epoch_diction = pickle.load(file)
 
@@ -197,7 +152,7 @@ for file_path in file_paths:
 
 # Plot the averaged training loss and test accuracy
 # print(all_avg_test_accuracy)
-plot_metrics(all_avg_train_loss, 'Average Training Loss Across All Agents', 'Loss', network_type)
-plot_metrics(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents', 'Accuracy', network_type)
-plot_metrics_time(all_avg_train_loss, 'Average Training Loss Across All Agents Over Time', 'Loss', time_per_epoch_diction, network_type)
-plot_metrics_time(all_avg_test_accuracy, 'Average Test Accuracy Across All Agents Over Time', 'Accuracy', time_per_epoch_diction, network_type)
+plot_metrics(all_avg_train_loss, 'Loss', network_type)
+plot_metrics(all_avg_test_accuracy, 'Accuracy', network_type)
+plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, network_type)
+plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, network_type)
