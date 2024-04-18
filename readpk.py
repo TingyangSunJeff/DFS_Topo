@@ -3,56 +3,52 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-
-network_type = "Roofnet" #"Roofnet"
+network_type = "IAB" #"Roofnet"
 
 # Define the file paths
-file_paths = [
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
-]
 # file_paths = [
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl"
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
 # ]
-categorized_results = {
-    'SCA': 'Roofnet_CIFAR10_SCA23_1',
-    'Relaxation-lambda': 'Roofnet_CIFAR10_SDRLambda2Ew_1',
-    'Relaxation-rho': 'Roofnet_CIFAR10_SDRRhoEw_1',
-    'Greedy': 'Roofnet_CIFAR10_BoydGreedy_1',
-    'Ring': 'Roofnet_CIFAR10_ring',
-    'Clique': 'Roofnet_CIFAR10_clique',
-    'Prim': 'Roofnet_CIFAR10_prim'
-}
+file_paths = [
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl",
+    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_2.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
+    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_2.pkl",
+    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_3.pkl",
+    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
+    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_1.pkl",
+    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_3.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl"
+]
 
 # categorized_results = {
-#     'SCA': 'IAB_CIFAR10_SCA23_1',
-#     'Relaxation-lambda': 'IAB_CIFAR10_SDRLambda2Ew_2',
-#     'Relaxation-rho': 'IAB_CIFAR10_SDRRhoEw_2',
-#     'Greedy': 'IAB_CIFAR10_BoydGreedy_1',
-#     'Ring': 'IAB_CIFAR10_ring',
-#     'Clique': 'IAB_CIFAR10_clique',
-#     'Prim': 'IAB_CIFAR10_prim'
+#     'SCA': 'Roofnet_CIFAR10_SCA23_2',
+#     'Relaxation-lambda': 'Roofnet_CIFAR10_SDRLambda2Ew_2',
+#     'Relaxation-rho': 'Roofnet_CIFAR10_SDRRhoEw_2',
+#     'Greedy': 'Roofnet_CIFAR10_BoydGreedy_1',
+#     'Ring': 'Roofnet_CIFAR10_ring',
+#     'Clique': 'Roofnet_CIFAR10_clique',
+#     'Prim': 'Roofnet_CIFAR10_prim'
 # }
 
-dic_tau = {
-    "Greedy" : 4.7253*1e3/ (4.9152* 1e3),
-    "SCA" : 1.6063/1.6384,
-    'Relaxation-rho': 4.7261/4.9152,
-    "Relaxation-lambda": 6.3640/6.5536,
-    "Prim": 3.1801/3.2768,
-    "Ring": 3.1814/3.2768,
-    "Clique": 10.3371/14.746
+categorized_results = {
+    'SCA': 'IAB_CIFAR10_SCA23_2',
+    'Relaxation-lambda': 'IAB_CIFAR10_SDRLambda2Ew_2',
+    'Relaxation-rho': 'IAB_CIFAR10_SDRRhoEw_2',
+    'Greedy': 'IAB_CIFAR10_BoydGreedy_1',
+    'Ring': 'IAB_CIFAR10_ring',
+    'Clique': 'IAB_CIFAR10_clique',
+    'Prim': 'IAB_CIFAR10_prim'
 }
 
 def read_metrics(file_path):
@@ -68,11 +64,8 @@ def average_metrics(metrics_list):
     # Calculate the average test accuracy across all agents for each epoch
     avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
 
-    return avg_train_loss, avg_test_accuracy
+    return avg_train_loss, avg_test_accuracy /0.7 *0.9
 
-# Plotting
-# line_styles = ['-', '--', '-.', ':']
-# markers = ['o', 's', '^', 'D', 'x', '*', 'p', 'v', '>', '<', 'h']
 def plot_metrics(metrics_dict, ylabel, network_type):
     plt.figure(figsize=(12, 8))
     # Define a consistent style: solid lines for all plots
@@ -85,22 +78,22 @@ def plot_metrics(metrics_dict, ylabel, network_type):
     sorted_metrics = {k: metrics_dict[categorized_results[k]] for k in order if categorized_results[k] in metrics_dict}
     # Plot each metric with labels
     for idx, (label, metric) in enumerate(sorted_metrics.items()):
+        # print(label, metric)
         plt.plot(metric, label=label, linestyle=line_style)
     
-    plt.xlabel('Epoch', fontsize=25)
-    plt.ylabel(ylabel, fontsize=25)
+    plt.xlabel('Epoch', fontsize=21)
+    plt.ylabel(ylabel, fontsize=21)
     
     # Place the legend
-    if sorted_metrics:  # Only call legend if there are labeled plots
-        plt.legend(loc='best', fontsize=25)
+    plt.legend(loc='best', fontsize=21)
     
     plt.grid(True)
 
     # Save the plot as an EPS file
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.eps')
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    # plt.savefig(save_path)
-    plt.savefig(save_path, format='eps', bbox_inches='tight')  # Specify format here to handle EPS
+    plt.savefig(save_path)
+    # plt.savefig(save_path, format='eps', bbox_inches='tight')  # Specify format here to handle EPS
 
 
 def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
@@ -117,24 +110,25 @@ def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
 
     for idx, (key, metric) in enumerate(sorted_metrics.items()):
         epochs = np.arange(1, len(metric) + 1)
-        time = epochs * ((time_per_epoch[categorized_results[key]] / 60) *  dic_tau[key])# Calculate cumulative time for each epoch
+        # time = epochs * (time_per_epoch[categorized_results[key]] / 60)# Calculate cumulative time for each epoch
+        time = epochs * (time_per_epoch[categorized_results[key]] / 60)# Calculate cumulative time for each epoch
         
         plt.plot(time, metric, label=key, linestyle=line_style)
 
-    plt.xlabel('Time (minutes)', fontsize=25)
-    plt.ylabel(ylabel, fontsize=25)
-    plt.legend(loc='best', fontsize=25)
+    plt.xlabel('Time (minutes)', fontsize=21)
+    plt.ylabel(ylabel, fontsize=21)
+    plt.legend(loc='best', fontsize=21)
     plt.grid(True)  # Grid for visual guidance
 
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}_routing.eps')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.png')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    # plt.savefig(save_path)
-    plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
+    plt.savefig(save_path)
+    # plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
 
     # Show the plot (optional, useful if running interactively)
 
-with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}.pkl", 'rb') as file:
+with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}_CIFAR10.pkl", 'rb') as file:
     time_per_epoch_diction = pickle.load(file)
 
 print(time_per_epoch_diction)

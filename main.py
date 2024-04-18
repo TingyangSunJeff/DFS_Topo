@@ -61,7 +61,9 @@ def process_files_and_generate_matrices(file_paths, fully_connected_overlay):
             _, mixing_matrix_random = optimize_K_mixing_matrix(fully_connected_overlay, links)
             file_key = f"{base_name}_{matrix_idx + 1}"
             Ea_diction[file_key] = links
-            tau_diction[file_key] = tau_value_list
+            if file_key == "IAB_CIFAR10_clique_1":
+                file_key = "IAB_CIFAR10_clique"
+            tau_diction[file_key] = tau_value_list[matrix_idx]
             output_filename = f'mixing_matrix_{file_key}.pkl'  # Adjust index to start from 1
             output_path = os.path.join('./mixing_matrix', output_filename)
             with open(output_path, 'wb') as file:
@@ -111,24 +113,24 @@ def main():
     activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
     activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
     # # print("~~~~~~~~~~~~~", activated_links_prim)
-    # with open(f'./Ea/{network_type}_ring.pkl', 'wb') as file:
-    #     pickle.dump(activated_links_ring, file)
-    # with open(f'./Ea/{network_type}_prim.pkl', 'wb') as file:
-    #     pickle.dump(activated_links_prim, file)
+    with open(f'./Ea/{network_type}_ring.pkl', 'wb') as file:
+        pickle.dump(activated_links_ring, file)
+    with open(f'./Ea/{network_type}_prim.pkl', 'wb') as file:
+        pickle.dump(activated_links_prim, file)
     # with open(f'./Ea/{network_type}_clique.pkl', 'wb') as file:
     # #     pickle.dump(list(fully_connected_overlay.edges), file)
-    optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
-    optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
-    optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
-    mixing_matrices = {
-        # 'random.pkl': mixing_matrix_random,
-        'ring.pkl': mixing_matrix_ring,
-        'clique.pkl': mixing_matrix_clique,
-        'prim.pkl': mixing_matrix_prim,
-    }
-    for filename, matrix in mixing_matrices.items():
-        with open(f'./mixing_matrix/mixing_matrix_{network_type}_CIFAR10_{filename}', 'wb') as file:
-            pickle.dump(matrix, file)
+    # optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
+    # optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
+    # optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
+    # mixing_matrices = {
+    #     # 'random.pkl': mixing_matrix_random,
+    #     'ring.pkl': mixing_matrix_ring,
+    #     'clique.pkl': mixing_matrix_clique,
+    #     'prim.pkl': mixing_matrix_prim,
+    # }
+    # for filename, matrix in mixing_matrices.items():
+    #     with open(f'./mixing_matrix/mixing_matrix_{network_type}_CIFAR10_{filename}', 'wb') as file:
+    #         pickle.dump(matrix, file)
     # # Save each mixing matrix in a separate file with a descriptive name
 
     # load proposed Ea
@@ -137,6 +139,7 @@ def main():
         "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SCA23.pkl",
         "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SDRLambda2Ew.pkl",
         "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SDRRhoEw.pkl",
+        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_clique.pkl"
         # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl",
         # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRLambda2Ew.pkl",
         # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRRhoEw.pkl",
@@ -148,8 +151,9 @@ def main():
         # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_BoydGreedy.pkl"
     ]  # Add your file paths here
     Ea_diction, tau_diction = process_files_and_generate_matrices(file_paths, fully_connected_overlay)
-    # print(Ea_diction)
-
+    print(tau_diction)
+    tau_diction["IAB_CIFAR10_prim"] = 8192
+    tau_diction["IAB_CIFAR10_ring"] = 8192
     # # # # # Ea_diction ={}
     # benchmark_list = [f"{network_type}_CIFAR10_ring", f"{network_type}_CIFAR10_random", f"{network_type}_CIFAR10_clique", f"{network_type}_CIFAR10_prim"]
     
@@ -194,8 +198,8 @@ def main():
     #     tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
     #     output_dic[key] = tau # unit:seconds
     # print(output_dic)
-    # with open(f'tau_results_{network_type}_CIFAR10.pkl', 'wb') as file:
-    #     pickle.dump(output_dic, file)
+    with open(f'tau_results_{network_type}_CIFAR10.pkl', 'wb') as file:
+        pickle.dump(tau_diction, file)
 
 
 if __name__ == "__main__":
