@@ -16,7 +16,7 @@ def create_underlay_network(num_nodes, edges):
 
     return underlay
 
-def find_shortest_path_with_delay(graph, source, target, weight='delay'):
+def find_shortest_path_with_delay(underlay_graph, source_node, dest_node, weight='delay'):
     """
     Find the shortest path in a graph with delays on each link using Dijkstra's algorithm.
 
@@ -29,12 +29,30 @@ def find_shortest_path_with_delay(graph, source, target, weight='delay'):
     Returns:
     A list of nodes that represents the shortest path from the source to the target.
     """
-    try:
-        # Compute the shortest path using Dijkstra's algorithm
-        shortest_path = nx.dijkstra_path(graph, source, target, weight=weight)
-        path_delay = nx.path_weight(graph, shortest_path, weight=weight)
-        return shortest_path, path_delay
-    except nx.NetworkXNoPath:
-        return f"No path between {source} and {target}."
-    except Exception as e:
-        return f"An error occurred: {e}"
+    # Parse the underlay routing map
+    source_node = int(source_node)
+    dest_node = int(dest_node)
+    with open("/scratch2/tingyang/DFS_Topo/IAB_underlay_routing_map.txt", 'r') as file:
+        underlay_routing_map = file.read()
+    routing_map = {}
+    for line in underlay_routing_map.split('\n'):
+        if line.strip():  # Skip empty lines
+            parts = line.split(': ')
+            source_end, dest_end = map(int, parts[0].split())
+            path = list(map(int, parts[2].split()))
+            routing_map[(source_end, dest_end)] = path
+    # Check if there is a path between the given source and destination nodes
+    if (source_node, dest_node) in routing_map:
+        shortest_path = routing_map[(source_node, dest_node)]
+        
+        if underlay_graph:
+            # Compute path delay using underlay_graph
+            total_delay = 0
+            for u, v in zip(shortest_path[:-1], shortest_path[1:]):
+                total_delay += underlay_graph[u][v][weight]  # Assuming delay is stored as an edge attribute
+            print(shortest_path, total_delay)
+            return shortest_path, total_delay
+        else:
+            return shortest_path, None
+    else:
+        return None, None  # No path found

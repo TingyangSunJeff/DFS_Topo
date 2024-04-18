@@ -73,7 +73,7 @@ def main():
     with open('./network_settings.json', 'r') as json_file:
         loaded_network_settings = json.load(json_file)  
     # edges, num_nodes = load_network_data(ROOFNET_FILE_PATH)
-    network_type = "Roofnet" # Roofnet/AboveNet/IAB
+    network_type = "IAB" # Roofnet/AboveNet/IAB
     edges, num_nodes, node_degrees = load_network_data(loaded_network_settings, network_type)
     # print(edges)
     # print(node_degrees)
@@ -86,8 +86,8 @@ def main():
     # print(sorted_nodes_by_degree)
     # Select the top N nodes with the lowest degrees
     overlay_nodes = []
-    if loaded_network_settings[network_type]["set_input"]:
-        overlay_nodes = [1, 2, 8, 9, 10, 11, 12, 15, 16, 17]
+    if network_type == "IAB":
+        overlay_nodes = [3, 6, 7, 9, 10, 12, 13, 15, 16, 18]
         print("!!!!!!!!!!")
     else:
         overlay_nodes = [node for node, degree in 
@@ -99,8 +99,8 @@ def main():
     underlay = create_underlay_network(num_nodes, edges)
     # print(underlay.edges)
     # Create a fully connected overlay network from a subset of nodes
-    fully_connected_overlay, underlay_routing_map = create_fully_connected_overlay_network(underlay, overlay_nodes)
-    # print(underlay_routing_map)
+    fully_connected_overlay = create_fully_connected_overlay_network(underlay, overlay_nodes)
+    print(fully_connected_overlay)
     # with open('roofnet_underlay_routing_map.pkl', 'wb') as file:
     #     pickle.dump(underlay_routing_map, file)
     # Example: Activate links using a random spanning tree algorithm
@@ -108,8 +108,8 @@ def main():
     # # (11)
 
     # activated_links = activate_links_random_spanning_tree(fully_connected_overlay)
-    # activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
-    # activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
+    activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
+    activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
     # # print("~~~~~~~~~~~~~", activated_links_prim)
     # with open(f'./Ea/{network_type}_ring.pkl', 'wb') as file:
     #     pickle.dump(activated_links_ring, file)
@@ -117,62 +117,56 @@ def main():
     #     pickle.dump(activated_links_prim, file)
     # with open(f'./Ea/{network_type}_clique.pkl', 'wb') as file:
     # #     pickle.dump(list(fully_connected_overlay.edges), file)
-    # Ea = []
-    # # Populate the undirected_links list
-    # for link in activated_links_prim:
-    #     Ea.append(link)  # Add original direction
-    #     Ea.append(link[::-1])  # Add reverse direction
-    # print(Ea)
-    # optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
-    # optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
-    # optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, Ea)
-    # mixing_matrices = {
-    #     # 'random.pkl': mixing_matrix_random,
-    #     'ring.pkl': mixing_matrix_ring,
-    #     'clique.pkl': mixing_matrix_clique,
-    #     'prim.pkl': mixing_matrix_prim,
-    # }
-    # for filename, matrix in mixing_matrices.items():
-    #     with open(f'./mixing_matrix/mixing_matrix_{network_type}_MNIST_{filename}', 'wb') as file:
-    #         pickle.dump(matrix, file)
+    optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
+    optimal_rho_tilde, mixing_matrix_clique = optimize_K_mixing_matrix(fully_connected_overlay, list(fully_connected_overlay.edges))
+    optimal_rho_tilde, mixing_matrix_prim = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_prim)
+    mixing_matrices = {
+        # 'random.pkl': mixing_matrix_random,
+        'ring.pkl': mixing_matrix_ring,
+        'clique.pkl': mixing_matrix_clique,
+        'prim.pkl': mixing_matrix_prim,
+    }
+    for filename, matrix in mixing_matrices.items():
+        with open(f'./mixing_matrix/mixing_matrix_{network_type}_CIFAR10_{filename}', 'wb') as file:
+            pickle.dump(matrix, file)
     # # Save each mixing matrix in a separate file with a descriptive name
 
     # load proposed Ea
     file_paths = [
-        # "/scratch2/tingyang/DFS_Topo/Ea/IAB_MNIST_BoydGreedy.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/IAB_MNIST_SCA23.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/IAB_MNIST_SDRLambda2Ew.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/IAB_MNIST_SDRRhoEw.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_SCA23.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_SDRLambda2Ew.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_SDRRhoEw.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_BoydGreedy.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_clique.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_SDRRhoEw.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_SDRLambda2Ew.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_SCA23.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_BoydGreedy.pkl"
+        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_BoydGreedy.pkl",
+        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SCA23.pkl",
+        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SDRLambda2Ew.pkl",
+        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SDRRhoEw.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRLambda2Ew.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRRhoEw.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_BoydGreedy.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_clique.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRRhoEw.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRLambda2Ew.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl",
+        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_BoydGreedy.pkl"
     ]  # Add your file paths here
     Ea_diction, tau_diction = process_files_and_generate_matrices(file_paths, fully_connected_overlay)
+    # print(Ea_diction)
 
-
-    # # # Ea_diction ={}
-    benchmark_list = [f"{network_type}_MNIST_ring", f"{network_type}_MNIST_random", f"{network_type}_MNIST_clique", f"{network_type}_MNIST_prim"]
+    # # # # # Ea_diction ={}
+    # benchmark_list = [f"{network_type}_CIFAR10_ring", f"{network_type}_CIFAR10_random", f"{network_type}_CIFAR10_clique", f"{network_type}_CIFAR10_prim"]
     
-    for key in benchmark_list:
-        if key == f"{network_type}_MNIST_clique":
-            Ea_diction[key] = [link for edge in fully_connected_overlay.edges for link in (edge, edge[::-1])]
-        # elif key == f"{network_type}_MNIST_random":
-        #     links = activate_links_random_spanning_tree(fully_connected_overlay)
-        #     Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
-        elif key == f"{network_type}_MNIST_ring":
-            links = activate_links_ring_topology(fully_connected_overlay)
-            Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
-        elif key == f"{network_type}_MNIST_prim":
-            links = activate_links_prim_topology(fully_connected_overlay)
-            # Ea_diction[key] = links
-            Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
-    print(Ea_diction)
+    # for key in benchmark_list:
+    #     if key == f"{network_type}_CIFAR10_clique":
+    #         Ea_diction[key] = [link for edge in fully_connected_overlay.edges for link in (edge, edge[::-1])]
+    #     # elif key == f"{network_type}_CIFAR10_random":
+    #     #     links = activate_links_random_spanning_tree(fully_connected_overlay)
+    #     #     Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
+    #     elif key == f"{network_type}_CIFAR10_ring":
+    #         links = activate_links_ring_topology(fully_connected_overlay)
+    #         Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
+    #     elif key == f"{network_type}_CIFAR10_prim":
+    #         links = activate_links_prim_topology(fully_connected_overlay)
+    #         # Ea_diction[key] = links
+    #         Ea_diction[key] = [link for edge in links for link in (edge, edge[::-1])]
+    # print(Ea_diction)
 
 
     # Draw the networks and their respective trees/topologies
@@ -192,16 +186,16 @@ def main():
     # # print("Mixing matrix from main:\n", mixing_matrix)
 
     # # # # (5)
-    output_dic = {} # topo : tau
-    data_size = loaded_network_settings["resnet"] * 32 # unit:bit tensorflow use float32 datatype
-    for key, Ea in Ea_diction.items():
-        multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
-        # tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-        tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
-        output_dic[key] = tau # unit:seconds
-    print(output_dic)
-    with open(f'tau_results_{network_type}_mnist.pkl', 'wb') as file:
-        pickle.dump(output_dic, file)
+    # output_dic = {} # topo : tau
+    # data_size = loaded_network_settings["resnet"] * 32 # unit:bit tensorflow use float32 datatype
+    # for key, Ea in Ea_diction.items():
+    #     multicast_demands = Ea_to_demand_model(Ea, overlay_nodes, data_size)
+    #     # tau = optimize_network_route_rate(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+    #     tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
+    #     output_dic[key] = tau # unit:seconds
+    # print(output_dic)
+    # with open(f'tau_results_{network_type}_CIFAR10.pkl', 'wb') as file:
+    #     pickle.dump(output_dic, file)
 
 
 if __name__ == "__main__":

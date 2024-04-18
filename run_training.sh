@@ -1,33 +1,27 @@
 #!/bin/bash
 
 # Define the path to your Python script
-PYTHON_SCRIPT_PATH="dpsgd_DR.py"
+PYTHON_SCRIPT_PATH="dpsgd_cifar.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_ring.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_prim.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_clique.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_SDRRhoEw_2.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_SDRRhoEw_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_SDRLambda2Ew_2.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_SDRLambda2Ew_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_SCA23_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_MNIST_BoydGreedy_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_clique.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_prim.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_ring.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_BoydGreedy_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_SCA23_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_SCA23_2.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_SDRLambda2Ew_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_SDRLambda2Ew_2.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_SDRRhoEw_1.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_SDRRhoEw_2.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_ring.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_prim.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_clique.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRRhoEw_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRRhoEw_2.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRRhoEw_3.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRLambda2Ew_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SDRLambda2Ew_2.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SCA23_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SCA23_2.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_SCA23_3.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_BoydGreedy_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_IAB_CIFAR10_BoydGreedy_2.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
-GPUS=(0)
+GPUS=(0 1 2)
 
 # Ensure the GPUs array is not longer than the MIXING_MATRICES array
 if [ ${#GPUS[@]} -gt ${#MIXING_MATRICES[@]} ]; then
@@ -48,7 +42,7 @@ for i in "${!MIXING_MATRICES[@]}"; do
     MATRIX_NAME=${BASE_NAME#mixing_matrix_}
 
     # Construct the output file name based on the matrix name
-    OUTPUT_FILE="result_for_cnn_${MATRIX_NAME}.pkl"
+    OUTPUT_FILE="result_for_resnet_${MATRIX_NAME}.pkl"
     
     # Use CUDA_VISIBLE_DEVICES to assign a GPU to this script run
     CUDA_VISIBLE_DEVICES=$GPU_ID python $PYTHON_SCRIPT_PATH $MATRIX_PATH $OUTPUT_FILE &
