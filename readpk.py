@@ -3,53 +3,54 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-network_type = "IAB" #"Roofnet"
+
 
 # Define the file paths
-# file_paths = [
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-#     "/scratch2/tingyang/DFS_Topo/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
-# ]
 file_paths = [
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_BoydGreedy_2.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_clique.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_ring.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_prim.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_2.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SCA23_3.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_1.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRLambda2Ew_2.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_1.pkl",
-    # "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_3.pkl",
-    "/scratch2/tingyang/DFS_Topo/result_for_resnet_IAB_CIFAR10_SDRRhoEw_2.pkl"
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_prim.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_clique.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_BoydGreedy_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_ring.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_SCA23_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_SDRLambda2Ew_1.pkl",
+    "/scratch2/tingyang/DFS_Topo/result_for_cnn_Roofnet_MNIST_SDRRhoEw_1.pkl"
 ]
 
-# categorized_results = {
-#     'SCA': 'Roofnet_CIFAR10_SCA23_2',
-#     'Relaxation-lambda': 'Roofnet_CIFAR10_SDRLambda2Ew_2',
-#     'Relaxation-rho': 'Roofnet_CIFAR10_SDRRhoEw_2',
-#     'Greedy': 'Roofnet_CIFAR10_BoydGreedy_1',
-#     'Ring': 'Roofnet_CIFAR10_ring',
-#     'Clique': 'Roofnet_CIFAR10_clique',
-#     'Prim': 'Roofnet_CIFAR10_prim'
-# }
+# file_paths = [
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_BoydGreedy_1.pkl",
+#     # "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_BoydGreedy_2.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_clique.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_ring.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_prim.pkl",
+#     # "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SCA23_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SCA23_2.pkl",
+#     # "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SCA23_3.pkl",
+#     # "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SDRLambda2Ew_1.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SDRLambda2Ew_2.pkl",
+#     # "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SDRRhoEw_1.pkl",
+#     # "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SDRRhoEw_3.pkl",
+#     "/scratch2/tingyang/DFS_Topo/result_for_cnn_IAB_MNIST_SDRRhoEw_2.pkl"
+# ]
 
 categorized_results = {
-    'SCA': 'IAB_CIFAR10_SCA23_2',
-    'Relaxation-lambda': 'IAB_CIFAR10_SDRLambda2Ew_2',
-    'Relaxation-rho': 'IAB_CIFAR10_SDRRhoEw_2',
-    'Greedy': 'IAB_CIFAR10_BoydGreedy_1',
-    'Ring': 'IAB_CIFAR10_ring',
-    'Clique': 'IAB_CIFAR10_clique',
-    'Prim': 'IAB_CIFAR10_prim'
+    'SCA': 'Roofnet_MNIST_SCA23_1',
+    'Relaxation-lambda': 'Roofnet_MNIST_SDRLambda2Ew_1',
+    'Relaxation-rho': 'Roofnet_MNIST_SDRRhoEw_1',
+    'Greedy': 'Roofnet_MNIST_BoydGreedy_1',
+    'Ring': 'Roofnet_MNIST_ring',
+    'Clique': 'Roofnet_MNIST_clique',
+    'Prim': 'Roofnet_MNIST_prim'
 }
+
+# categorized_results = {
+#     'SCA': 'IAB_MNIST_SCA23_2',
+#     'Relaxation-lambda': 'IAB_MNIST_SDRLambda2Ew_2',
+#     'Relaxation-rho': 'IAB_MNIST_SDRRhoEw_2',
+#     'Greedy': 'IAB_MNIST_BoydGreedy_1',
+#     'Ring': 'IAB_MNIST_ring',
+#     'Clique': 'IAB_MNIST_clique',
+#     'Prim': 'IAB_MNIST_prim'
+# }
 
 def read_metrics(file_path):
     with open(file_path, 'rb') as file:
@@ -64,9 +65,9 @@ def average_metrics(metrics_list):
     # Calculate the average test accuracy across all agents for each epoch
     avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
 
-    return avg_train_loss, avg_test_accuracy /0.7 *0.9
+    return avg_train_loss, avg_test_accuracy
 
-def plot_metrics(metrics_dict, ylabel, network_type):
+def plot_metrics(metrics_dict, ylabel, network_type, plot_mode="png"):
     plt.figure(figsize=(12, 8))
     # Define a consistent style: solid lines for all plots
     line_style = '-'
@@ -90,13 +91,15 @@ def plot_metrics(metrics_dict, ylabel, network_type):
     plt.grid(True)
 
     # Save the plot as an EPS file
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}.{plot_mode}')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
-    # plt.savefig(save_path, format='eps', bbox_inches='tight')  # Specify format here to handle EPS
+    if plot_mode == "png":
+        plt.savefig(save_path)
+    else:
+        plt.savefig(save_path, format='eps', bbox_inches='tight')
 
 
-def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
+def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type, x_axis_limit, plot_mode="png"):
     plt.figure(figsize=(12, 8))  # Larger size for better readability
 
     # Define styles, markers, and colors
@@ -111,34 +114,85 @@ def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type):
     for idx, (key, metric) in enumerate(sorted_metrics.items()):
         epochs = np.arange(1, len(metric) + 1)
         # time = epochs * (time_per_epoch[categorized_results[key]] / 60)# Calculate cumulative time for each epoch
-        time = epochs * (time_per_epoch[categorized_results[key]] / 60)# Calculate cumulative time for each epoch
+        time = epochs * ((time_per_epoch[categorized_results[key]]) / 60)# Calculate cumulative time for each epoch
         
         plt.plot(time, metric, label=key, linestyle=line_style)
 
     plt.xlabel('Time (minutes)', fontsize=21)
     plt.ylabel(ylabel, fontsize=21)
-    plt.legend(loc='best', fontsize=21)
+    plt.legend(loc='best', fontsize=17)
     plt.grid(True)  # Grid for visual guidance
-
+    plt.xscale('log') 
+    plt.xlim(x_axis_limit)
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.png')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.{plot_mode}')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    plt.savefig(save_path)
-    # plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
+    if plot_mode == "png":
+        plt.savefig(save_path)
+    else:
+        plt.savefig(save_path, format='eps', bbox_inches='tight')   # Higher dpi for better image quality
 
     # Show the plot (optional, useful if running interactively)
 
-with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}_CIFAR10.pkl", 'rb') as file:
-    time_per_epoch_diction = pickle.load(file)
+network_type = "Roofnet" #"Roofnet"
+plot_mode = "eps"
+# with open(f"/scratch2/tingyang/DFS_Topo/tau_results_{network_type}_mnist.pkl", 'rb') as file:
+#     time_per_epoch_diction = pickle.load(file)
 
-print(time_per_epoch_diction)
+# print(time_per_epoch_diction)
+
+time_per_epoch_diction = {
+    'Roofnet_MNIST_BoydGreedy_1': 319.3663,
+    'Roofnet_MNIST_BoydGreedy_2': 319.3663,  # Same value as BoydGreedy_1
+    'Roofnet_MNIST_SCA23_1': 212.9107,
+    'Roofnet_MNIST_SCA23_2': 212.9107,  # Assuming same value for all SCA23 entries
+    'Roofnet_MNIST_SCA23_3': 212.9107,
+    'Roofnet_MNIST_SDRLambda2Ew_1': 638.7327,
+    'Roofnet_MNIST_SDRLambda2Ew_2': 638.7327,  # Same value as SDRLambda2Ew_1
+    'Roofnet_MNIST_SDRRhoEw_1': 319.3660,
+    'Roofnet_MNIST_SDRRhoEw_2': 319.3660,  # Same value as SDRRhoEw_1
+    'Roofnet_MNIST_SDRRhoEw_3': 319.3660,
+    # Assuming there are corresponding keys for 'clique', 'prim', and 'ring'
+    'Roofnet_MNIST_clique': 1349.83,  # Replace None with the actual values if available
+    'Roofnet_MNIST_prim': 302.184,
+    'Roofnet_MNIST_ring': 302.184
+}
+max_time_without_overlay = 50 * ((max(time_per_epoch_diction.values()) ) / 60)
+min_start = min(time_per_epoch_diction.values()) / 60
+
+time_dict_with_route = {
+    'Roofnet_MNIST_BoydGreedy_1': 306.7160,
+    'Roofnet_MNIST_BoydGreedy_2': 306.7160,  # Same value as BoydGreedy_1
+    'Roofnet_MNIST_SCA23_1': 206.7089,
+    'Roofnet_MNIST_SCA23_2': 206.7089,  # Assuming same value for all SCA23 entries
+    'Roofnet_MNIST_SCA23_3': 206.7089,
+    'Roofnet_MNIST_SDRLambda2Ew_1': 596.9154,
+    'Roofnet_MNIST_SDRLambda2Ew_2': 596.9154,  # Same value as SDRLambda2Ew_1
+    'Roofnet_MNIST_SDRRhoEw_1': 306.7978,
+    'Roofnet_MNIST_SDRRhoEw_2': 306.7978,  # Same value as SDRRhoEw_1
+    'Roofnet_MNIST_SDRRhoEw_3': 306.7978,
+    # Assuming there are corresponding keys for 'clique', 'prim', and 'ring'
+    'Roofnet_MNIST_clique': 963.57,  # Replace None with the actual values if available
+    'Roofnet_MNIST_prim': 292.184,
+    'Roofnet_MNIST_ring': 292.184
+}
 
 
-# time_per_epoch_diction = {'CIFAR10_SCA23_1': 4532.774887751348, 'CIFAR10_SCA23_2': 4532.774883521915, 'CIFAR10_SCA23_3': 4532.774881939509, 
-#         'CIFAR10_SDRLambda2Ew_1': 6043.699793544735, 'CIFAR10_SDRLambda2Ew_2': 6043.6998125462205, 
-#         'CIFAR10_SDRLambda2Ew_3': 6043.699812221992, 'CIFAR10_SDRRhoEw_1': 4532.797657392192, 
-#         'CIFAR10_BoydGreedy_1': 4532.774885300265, 'CIFAR10_ring': 3021.8499280883507, 'CIFAR10_random': 3021.850796229334, 'CIFAR10_clique': 13598.324506617035, 
-#         'CIFAR10_prim': 3021.8499001230703}
+# time_dict_with_route = {
+#     'IAB_MNIST_BoydGreedy_1': 8188.4, 
+#     'IAB_MNIST_BoydGreedy_2': 8188.4,  # Assuming BoydGreedy should match with route time for consistency
+#     'IAB_MNIST_SCA23_1': 8188.4, 
+#     'IAB_MNIST_SCA23_2': 8188.4,  # Repeated for multiple entries under the same method if needed
+#     'IAB_MNIST_SCA23_3': 8188.4, 
+#     'IAB_MNIST_SDRLambda2Ew_1': 12286.7, 
+#     'IAB_MNIST_SDRLambda2Ew_2': 12286.7,
+#     'IAB_MNIST_SDRRhoEw_1': 12286.7,
+#     'IAB_MNIST_SDRRhoEw_2': 12286.7,
+#     'IAB_MNIST_SDRRhoEw_3': 12286.7,  # Assuming SDR_rho matches SDRRhoEw in the keys
+#     'IAB_MNIST_clique': 28666.2, 
+#     'IAB_MNIST_prim': 8188.5, 
+#     'IAB_MNIST_ring': 8188.5
+# }
 
 # Initialize lists to store averaged metrics
 all_avg_train_loss = {}
@@ -149,7 +203,7 @@ for file_path in file_paths:
     avg_train_loss, avg_test_accuracy = average_metrics(metrics_history)
     
     # Extract the descriptive name from the file path
-    matrix_name = os.path.basename(file_path).split('.')[0].replace('result_for_resnet_', '')
+    matrix_name = os.path.basename(file_path).split('.')[0].replace('result_for_cnn_', '')
     
     # Store the averaged metrics in the dictionaries with the extracted name as the key
     all_avg_train_loss[matrix_name] = avg_train_loss
@@ -159,5 +213,19 @@ for file_path in file_paths:
 # print(all_avg_test_accuracy)
 plot_metrics(all_avg_train_loss, 'Loss', network_type)
 plot_metrics(all_avg_test_accuracy, 'Accuracy', network_type)
-plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, network_type)
-plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, network_type)
+
+
+# plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, network_type)
+# plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, network_type)
+
+# Set the same x-axis range for both plots
+range_extension_factor = 1.2
+x_axis_limit = (min_start / range_extension_factor, max_time_without_overlay * range_extension_factor)
+
+# Plot for the case 'without overlay routing'
+plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, f'{network_type}_mnist_without_overlay', x_axis_limit, plot_mode)
+plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, f'{network_type}_mnist_without_overlay', x_axis_limit, plot_mode)
+
+# # Plot for the case 'with overlay routing'
+plot_metrics_time(all_avg_train_loss, 'Loss', time_dict_with_route, f'{network_type}_mnist_with_overlay', x_axis_limit, plot_mode)
+plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_dict_with_route, f'{network_type}_mnist_with_overlay', x_axis_limit, plot_mode)
