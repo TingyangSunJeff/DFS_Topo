@@ -75,7 +75,7 @@ def main():
     with open('./network_settings.json', 'r') as json_file:
         loaded_network_settings = json.load(json_file)  
     # edges, num_nodes = load_network_data(ROOFNET_FILE_PATH)
-    network_type = "IAB" # Roofnet/AboveNet/IAB
+    network_type = "Roofnet" # Roofnet/AboveNet/IAB
     edges, num_nodes, node_degrees = load_network_data(loaded_network_settings, network_type)
     # print(edges)
     # print(node_degrees)
@@ -110,13 +110,13 @@ def main():
     # # (11)
 
     # activated_links = activate_links_random_spanning_tree(fully_connected_overlay)
-    activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
-    activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
-    # # print("~~~~~~~~~~~~~", activated_links_prim)
-    with open(f'./Ea/{network_type}_ring.pkl', 'wb') as file:
-        pickle.dump(activated_links_ring, file)
-    with open(f'./Ea/{network_type}_prim.pkl', 'wb') as file:
-        pickle.dump(activated_links_prim, file)
+    # activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
+    # activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
+    # # # print("~~~~~~~~~~~~~", activated_links_prim)
+    # with open(f'./Ea/{network_type}_ring.pkl', 'wb') as file:
+    #     pickle.dump(activated_links_ring, file)
+    # with open(f'./Ea/{network_type}_prim.pkl', 'wb') as file:
+    #     pickle.dump(activated_links_prim, file)
     # with open(f'./Ea/{network_type}_clique.pkl', 'wb') as file:
     # #     pickle.dump(list(fully_connected_overlay.edges), file)
     # optimal_rho_tilde, mixing_matrix_ring = optimize_K_mixing_matrix(fully_connected_overlay, activated_links_ring)
@@ -135,25 +135,21 @@ def main():
 
     # load proposed Ea
     file_paths = [
-        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_BoydGreedy.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SCA23.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SDRLambda2Ew.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_SDRRhoEw.pkl",
-        "/scratch2/tingyang/DFS_Topo/Ea/IAB_CIFAR10_clique.pkl"
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRLambda2Ew.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRRhoEw.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_BoydGreedy.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_clique.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRRhoEw.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SDRLambda2Ew.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_SCA23.pkl",
-        # "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_BoydGreedy.pkl"
-    ]  # Add your file paths here
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_finf_BoydGreedy.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_finf_SCA23.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_finf_SDRLambda2Ew.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_CIFAR10_finf_SDRRhoEw.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_finf_BoydGreedy.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_finf_SCA23.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_finf_SDRLambda2Ew.pkl",
+    "/scratch2/tingyang/DFS_Topo/Ea/Roofnet_MNIST_finf_SDRRhoEw.pkl"
+    ]
+
+      # Add your file paths here
     Ea_diction, tau_diction = process_files_and_generate_matrices(file_paths, fully_connected_overlay)
-    print(tau_diction)
-    tau_diction["IAB_CIFAR10_prim"] = 8192
-    tau_diction["IAB_CIFAR10_ring"] = 8192
+    # print(tau_diction)
+    # tau_diction["IAB_CIFAR10_prim"] = 8192
+    # tau_diction["IAB_CIFAR10_ring"] = 8192
     # # # # # Ea_diction ={}
     # benchmark_list = [f"{network_type}_CIFAR10_ring", f"{network_type}_CIFAR10_random", f"{network_type}_CIFAR10_clique", f"{network_type}_CIFAR10_prim"]
     
@@ -198,8 +194,6 @@ def main():
     #     tau = optimize_network_route_rate_direct(fully_connected_overlay, multicast_demands, underlay, link_capacity_map)
     #     output_dic[key] = tau # unit:seconds
     # print(output_dic)
-    with open(f'tau_results_{network_type}_CIFAR10.pkl', 'wb') as file:
-        pickle.dump(tau_diction, file)
 
 
 if __name__ == "__main__":
