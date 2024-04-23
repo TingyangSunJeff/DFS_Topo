@@ -1,23 +1,21 @@
 #!/bin/bash
 
 # Define the path to your Python script
-PYTHON_SCRIPT_PATH="dpsgd_cifar.py"
+PYTHON_SCRIPT_PATH="dpsgd_mnist.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_BoydGreedy_1.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_BoydGreedy_2.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_BoydGreedy_3.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_SCA23_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_BoydGreedy_4.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_SCA23_2.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_SCA23_3.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_SDRLambda2Ew_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_finf_SDRRhoEw_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_BoydGreedy_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SCA23_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SCA23_2.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRLambda2Ew_1.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRLambda2Ew_2.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRRhoEw_1.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRRhoEw_2.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
-GPUS=(0 1 2)
+GPUS=(0)
 
 # Ensure the GPUs array is not longer than the MIXING_MATRICES array
 if [ ${#GPUS[@]} -gt ${#MIXING_MATRICES[@]} ]; then
@@ -38,7 +36,7 @@ for i in "${!MIXING_MATRICES[@]}"; do
     MATRIX_NAME=${BASE_NAME#mixing_matrix_}
 
     # Construct the output file name based on the matrix name
-    OUTPUT_FILE="result_for_resnet_${MATRIX_NAME}.pkl"
+    OUTPUT_FILE="result_for_cnn_${MATRIX_NAME}.pkl"
     
     # Use CUDA_VISIBLE_DEVICES to assign a GPU to this script run
     CUDA_VISIBLE_DEVICES=$GPU_ID python $PYTHON_SCRIPT_PATH $MATRIX_PATH $OUTPUT_FILE &

@@ -111,7 +111,7 @@ def main():
 
     # activated_links = activate_links_random_spanning_tree(fully_connected_overlay)
     # activated_links_ring = activate_links_ring_topology(fully_connected_overlay)
-    # activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
+    activated_links_prim = activate_links_prim_topology(fully_connected_overlay)
     # # # print("~~~~~~~~~~~~~", activated_links_prim)
     # with open(f'./Ea/{network_type}_ring.pkl', 'wb') as file:
     #     pickle.dump(activated_links_ring, file)

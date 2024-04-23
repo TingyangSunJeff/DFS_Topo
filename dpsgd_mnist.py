@@ -61,7 +61,6 @@ def aggregate_parameters(models, mixing_matrix):
 
 def main(mixing_matrix_path, output_file):
     (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
-    print(train_images.shape,test_images.shape )
     train_images = train_images.reshape((-1, 28, 28, 1)).astype('float32') / 255.0
     test_images = test_images.reshape((-1, 28, 28, 1)).astype('float32') / 255.0
     train_labels = to_categorical(train_labels, 10)
