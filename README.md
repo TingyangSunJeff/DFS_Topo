@@ -1,7 +1,7 @@
 # Main function
 Test_Ea_Alg.m:
 # Algorithm framwork within Test_Ea_Alg.m
-G_overlay = gen_overlay_netw(n_V, N_links, G_type, modelType, F_calculated): generate G_overlay as the meta data structure for overlay network
+G_overlay = gen_overlay_netw(n_V, N_links, G_type, modelType, F_calculated): generate G_overlay as the meta data structure for overlay network \\
 biLevel_upper(G_overlay, M1, M2, "boyd_greedy"): upper-level function for all algorithms. The 4th argument is the algorithms' name in string. This function invoke lower-level algorithm.
 ----SDR_lambda2_equalWeight: minimize \lambda_2(L) with equal weight.
 ----SDR_rho_equalWeight: SDR of (23)
