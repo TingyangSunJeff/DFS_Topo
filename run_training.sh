@@ -6,12 +6,12 @@ PYTHON_SCRIPT_PATH="dpsgd_mnist.py"
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_BoydGreedy_1.pkl"
-    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SCA23_1.pkl"
+    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SCA23_1.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SCA23_2.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRLambda2Ew_1.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRLambda2Ew_2.pkl"
     # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRRhoEw_1.pkl"
-    "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRRhoEw_2.pkl"
+    # "/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_MNIST_finf_SDRRhoEw_2.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
