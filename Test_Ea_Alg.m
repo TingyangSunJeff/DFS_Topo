@@ -798,7 +798,7 @@ function solution = SDR_lambda2_equalWeight(G_overlay, beta)
     N_nodes = G_overlay.N_nodes;
     N_pairs = size(G_overlay.Bp, 2);
     Bp = G_overlay.Bp(G_overlay.Vo, :);
-    alpha = 1 / N_nodes / 2;
+    alpha = 1 / (2*N_nodes+1);
     mat_temr2CF = gen_constr_CF_beta(G_overlay, beta);
 
     yalmip('clear')
@@ -935,7 +935,7 @@ function solution = SDR_rho_equalWeight(G_overlay, beta)
     N_nodes = G_overlay.N_nodes;
     N_pairs = size(G_overlay.Bp, 2);
     Bp = G_overlay.Bp(G_overlay.Vo, :);
-    alpha = 1 / N_nodes / 2;
+    alpha = 1 / (2*N_nodes+1);
     mat_temr2CF = gen_constr_CF_beta(G_overlay, beta);
 
     yalmip('clear')
@@ -1072,7 +1072,7 @@ function solution = SCA_rho_ew(G_overlay, beta)
     N_nodes = G_overlay.N_nodes;
     N_pairs = size(G_overlay.Bp, 2);
     Bp = G_overlay.Bp(G_overlay.Vo, :);
-    alpha = 1 / N_nodes / 2;
+    alpha = 1 / (2*N_nodes+1);
     mat_temr2CF = gen_constr_CF_beta(G_overlay, beta);
     
     constrViolated = 1;
@@ -1185,7 +1185,7 @@ function solution = SCA_add_rho_ew(G_overlay, beta)
     N_nodes = G_overlay.N_nodes;
     N_pairs = size(G_overlay.Bp, 2);
     Bp = G_overlay.Bp(G_overlay.Vo, :);
-    alpha = 1 / N_nodes / 2;
+    alpha = 1 / (2*N_nodes+1);
     mat_temr2CF = gen_constr_CF_beta(G_overlay, beta);
     
     constrViolated = 1;
@@ -1285,7 +1285,7 @@ function solution = SCA_both_rho_ew(G_overlay, beta)
     N_nodes = G_overlay.N_nodes;
     N_pairs = size(G_overlay.Bp, 2);
     Bp = G_overlay.Bp(G_overlay.Vo, :);
-    alpha = 1 / N_nodes / 2;
+    alpha = 1 / (2*N_nodes+1);
     mat_temr2CF = gen_constr_CF_beta(G_overlay, beta);
     % % Ea_MST = [4, 8, 9, 11, 16, 18, 31, 33, 36];
     
