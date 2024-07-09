@@ -1,10 +1,11 @@
-import matplotlib.pyplot as plt
-import numpy as np
+import pickle
 
-# Generate a random image (you can replace this with your image data)
-image_data = np.random.random((100, 100))
+def read_pkl_file(file_path):
+    with open(file_path, 'rb') as file:
+        content = pickle.load(file)
+    return content
 
-# Plot the image
-plt.imshow(image_data, cmap='gray')  # You can specify the colormap if needed
-plt.axis('off')  # Turn off axis
-plt.savefig("tset.png")
+file_path = '/scratch2/tingyang/DFS_Topo/mixing_matrix/mixing_matrix_Roofnet_CIFAR10_clique_1.pkl'  # Replace with your file path
+content = read_pkl_file(file_path)
+
+print(content)
