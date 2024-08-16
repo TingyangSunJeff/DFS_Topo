@@ -16,7 +16,7 @@ def create_underlay_network(num_nodes, edges):
 
     return underlay
 
-def find_shortest_path_with_delay(underlay_graph, source_node, dest_node, weight='delay'):
+def find_shortest_path_with_delay(underlay_graph, source_node, dest_node, network_type, weight='delay'):
     """
     Find the shortest path in a graph with delays on each link using Dijkstra's algorithm.
 
@@ -32,7 +32,7 @@ def find_shortest_path_with_delay(underlay_graph, source_node, dest_node, weight
     # Parse the underlay routing map
     source_node = int(source_node)
     dest_node = int(dest_node)
-    with open("/scratch2/tingyang/DFS_Topo/IAB_underlay_routing_map.txt", 'r') as file:
+    with open(f"./{network_type}_underlay_routing_map.txt", 'r') as file:
         underlay_routing_map = file.read()
     routing_map = {}
     for line in underlay_routing_map.split('\n'):
@@ -50,7 +50,6 @@ def find_shortest_path_with_delay(underlay_graph, source_node, dest_node, weight
             total_delay = 0
             for u, v in zip(shortest_path[:-1], shortest_path[1:]):
                 total_delay += underlay_graph[u][v][weight]  # Assuming delay is stored as an edge attribute
-            print(shortest_path, total_delay)
             return shortest_path, total_delay
         else:
             return shortest_path, None

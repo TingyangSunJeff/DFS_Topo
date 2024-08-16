@@ -239,3 +239,40 @@ def optimize_K_mixing_matrix(fully_connected_overlay, activated_links):
     return optimal_rho, W
 
 
+def metropolis_weights(overlay_nodes, active_edges, node_degrees):
+    """
+    Calculate the Metropolis weights for a given time-varying graph.
+
+    Parameters:
+    - overlay_nodes: A list of node indices representing the overlay network.
+    - active_edges: A set of tuples representing the active edges at time t using underlay indices.
+    - node_degrees: A dictionary representing the degree of each node at time t using underlay indices.
+
+    Returns:
+    - weights: A 2D list representing the weight matrix W(t) where weights[i][j] is the weight from node i to node j in the overlay.
+    """
+    num_nodes = len(overlay_nodes)
+    # Map underlay indices to overlay indices
+    overlay_index_map = {node: idx for idx, node in enumerate(overlay_nodes)}
+
+    # Initialize weight matrix with zeros
+    weights = [[0 for _ in range(num_nodes)] for _ in range(num_nodes)]
+
+    # Fill weights for active edges
+    for i, j in active_edges:
+        if i in overlay_index_map and j in overlay_index_map:
+            overlay_i = overlay_index_map[i]
+            overlay_j = overlay_index_map[j]
+
+            if overlay_i != overlay_j:  # Ensure it's not a self-loop
+                weight_ij = 1 / (1 + max(node_degrees[i], node_degrees[j]))
+                weights[overlay_i][overlay_j] = weight_ij
+                weights[overlay_j][overlay_i] = weight_ij  # Since the graph is undirected
+
+    # Fill self-loop weights
+    for i in range(num_nodes):
+        # Ensure row sum is 1 by subtracting sum of other weights in row
+        neighbor_sum = sum(weights[i][j] for j in range(num_nodes) if j != i)
+        weights[i][i] = 1 - neighbor_sum
+
+    return weights

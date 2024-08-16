@@ -18,7 +18,7 @@ def activate_links_random_spanning_tree(overlay_network):
         activated_links.add(tuple(sorted(new_edge)))
         visited.update(new_edge)
 
-    return activated_links
+    return activated_links + [(j, i) for i, j in activated_links]
 
 def activate_links_ring_topology(overlay_network):
     """
@@ -31,8 +31,8 @@ def activate_links_ring_topology(overlay_network):
     for i in range(len(nodes)):
         next_node = nodes[(i + 1) % len(nodes)]  # Loop back to the first node
         activated_links.add((nodes[i], next_node))
-
-    return activated_links
+    activated_links = list(activated_links)
+    return activated_links + [(j, i) for i, j in activated_links]
 
 def activate_links_prim_topology(overlay_network):
     """
@@ -50,8 +50,7 @@ def activate_links_prim_topology(overlay_network):
 
     while len(visited) < len(nodes):
         # Select edges that connect the tree to new nodes, based on smallest delay
-        eligible_edges = [(u, v, d["delay"]) for u, v, d in overlay_network.edges(data=True) if (u in visited) ^ (v in visited)]
-
+        eligible_edges = [(int(u), int(v), d["delay"]) for u, v, d in overlay_network.edges(data=True) if (u in visited) ^ (v in visited)]
         # Find the edge with the minimum delay
         if not eligible_edges:
             break  # If there are no eligible edges, exit the loop
@@ -61,8 +60,9 @@ def activate_links_prim_topology(overlay_network):
         
         # Update the visited nodes
         visited.update([new_edge[0], new_edge[1]])
+    activated_links = list(activated_links)
+    return activated_links + [(j, i) for i, j in activated_links]
 
-    return activated_links
 
 # Additional algorithms can be added here as needed, for example:
 # - Greedy algorithms for link activation based on specific criteria

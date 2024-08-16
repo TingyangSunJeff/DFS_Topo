@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+
 def adjust_matrix(matrix):
     adjusted_matrix = np.zeros(matrix.shape)
     for i in range(matrix.shape[0]):
@@ -107,3 +108,78 @@ def load_network_data(loaded_network_settings, network_type):
 
     return edges, num_nodes, node_degrees
 
+
+def calculate_node_degrees(edge_list):
+    """
+    Calculate the node degrees for a given list of edges.
+
+    Parameters:
+    - edge_list: A list of tuples representing the edges in the graph.
+
+    Returns:
+    - node_degrees: A dictionary with node indices as keys and their degrees as values.
+    """
+    node_degrees = {}
+
+    for edge in edge_list:
+        node1, node2 = edge
+
+        # Increment degree for both nodes in the edge
+        if node1 in node_degrees:
+            node_degrees[node1] += 1
+        else:
+            node_degrees[node1] = 1
+
+        if node2 in node_degrees:
+            node_degrees[node2] += 1
+        else:
+            node_degrees[node2] = 1
+
+    return node_degrees
+
+
+def check_convergence(accuracies, window_size=3, variance_threshold=0.01, stable_epochs=3):
+    """
+    Check if the training has converged based on a sliding window approach.
+
+    Parameters:
+    - accuracies: List of accuracy values per epoch.
+    - window_size: The number of epochs to consider in the sliding window.
+    - variance_threshold: The variance threshold to define convergence.
+    - stable_epochs: Number of consecutive epochs the variance should remain below the threshold to declare convergence.
+
+    Returns:
+    - converged: Boolean indicating if convergence has been achieved.
+    - convergence_epoch: The epoch at which convergence was achieved.
+    """
+    num_epochs = len(accuracies)
+    
+    for start_epoch in range(num_epochs - window_size + 1):
+        window = accuracies[start_epoch:start_epoch + window_size]
+        window_variance = np.var(window)
+
+        if window_variance < variance_threshold:
+            # Check if this stability holds for the next `stable_epochs` windows
+            stable_count = 0
+            for i in range(start_epoch, min(start_epoch + stable_epochs, num_epochs - window_size + 1)):
+                next_window = accuracies[i:i + window_size]
+                next_window_variance = np.var(next_window)
+                if next_window_variance < variance_threshold:
+                    stable_count += 1
+                else:
+                    break
+
+            if stable_count >= stable_epochs:
+                return True, start_epoch + window_size
+
+    return False, None
+
+# # Example accuracy data
+# accuracies = [0.80, 0.85, 0.87, 0.91, 0.91, 0.92, 0.92, 0.93, 0.93, 0.93, 0.94, 0.94, 0.95]
+
+# converged, convergence_epoch = check_convergence(accuracies, window_size=3, variance_threshold=0.0005, stable_epochs=3)
+
+# if converged:
+#     print(f"Convergence achieved at epoch {convergence_epoch}.")
+# else:
+#     print("Convergence not achieved.")

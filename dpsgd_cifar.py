@@ -104,7 +104,7 @@ def main(mixing_matrix_path, output_file):
     with open(mixing_matrix_path, 'rb') as file:
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
-
+    print(mixing_matrix)
     epochs = 60
     num_agents = 10
     # Loss function
