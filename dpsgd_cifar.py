@@ -105,7 +105,7 @@ def main(mixing_matrix_path, output_file):
         # Load the content of the file into a Python object
         mixing_matrix = pickle.load(file)
     print(mixing_matrix)
-    epochs = 60
+    epochs = 50
     num_agents = 10
     # Loss function
     loss_fn = tf.keras.losses.CategoricalCrossentropy()

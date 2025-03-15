@@ -1,23 +1,21 @@
 import pickle
 import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
 # Define the file paths
 file_paths = [
-    # "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-    # "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_2.pkl",
+    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
+    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
     "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
     "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SCA23_2.pkl",
-    # "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
-    # "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl"
-    # "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_clique.pkl"
+    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
+    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
+    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_clique.pkl"
 ]
 
 
@@ -34,7 +32,7 @@ def average_metrics(metrics_list):
     # Calculate the average test accuracy across all agents for each epoch
     avg_test_accuracy = np.mean(metrics_list['test_accuracy'], axis=0)
 
-    return avg_train_loss, avg_test_accuracy / 0.79
+    return avg_train_loss, avg_test_accuracy  / 0.78
 
 def plot_metrics(data_type, threshold, metrics_dict, ylabel, network_type, withinfer, plot_mode="png"):
     plt.figure(figsize=(12, 8))
@@ -42,7 +40,7 @@ def plot_metrics(data_type, threshold, metrics_dict, ylabel, network_type, withi
     order = ['Clique', 'Ring', 'Prim', 'SCA', 'Relaxation-rho', 'Relaxation-lambda', 'Greedy']
     sorted_metrics = {k: metrics_dict[categorized_results[k]] for k in order if categorized_results[k] in metrics_dict}
     convergence_epochs = {}
-    for idx, (label, metric) in enumerate(metrics_dict.items()):
+    for idx, (label, metric) in enumerate(sorted_metrics.items()):
         plt.plot(metric, label=label, linestyle=line_style)
         
         # Record the epoch index where the training loss first reaches 0.05 or below
@@ -164,15 +162,15 @@ elif "MNIST" in file_paths[0]:
 else:
     data_type = "Unknown"
 
-plot_mode = "png"
+plot_mode = "eps"
 
-withinfer = "_finf"
+withinfer = ""
 threshold = 0.15 if data_type == "MNIST" else 0.001
-epoch = 50 if data_type == "MNIST" else 60
+epoch = 50 #if data_type == "MNIST" else 60
 model = "cnn" if data_type == "MNIST" else "resnet"
 
 categorized_results = {
-    'SCA': f'{network_type}_{data_type}_SCA23_3',
+    'SCA': f'{network_type}_{data_type}_SCA23_1',
     'Relaxation-lambda': f'{network_type}_{data_type}_SDRLambda2Ew_1',
     'Relaxation-rho': f'{network_type}_{data_type}_SDRRhoEw_1',
     'Greedy': f'{network_type}_{data_type}_BoydGreedy_1',
@@ -213,13 +211,13 @@ plot_metrics(data_type, threshold, all_avg_test_accuracy, 'Accuracy', network_ty
 
 
 # Set the same x-axis range for both plots
-# range_extension_factor = 1.2
-# x_axis_limit = (min_start / range_extension_factor, max_time_without_overlay * range_extension_factor)
+range_extension_factor = 1.2
+x_axis_limit = (min_start / range_extension_factor, max_time_without_overlay * range_extension_factor)
 
-# # Plot for the case 'without overlay routing'
-# plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
-# plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
+# Plot for the case 'without overlay routing'
+plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
+plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
 
-# # Plot for the case 'with overlay routing'
-# plot_metrics_time(all_avg_train_loss, 'Loss', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
-# plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
+# Plot for the case 'with overlay routing'
+plot_metrics_time(all_avg_train_loss, 'Loss', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
+plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the path to your Python script
-PYTHON_SCRIPT_PATH="dpsgd_cifar.py"
+PYTHON_SCRIPT_PATH="newtest.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
@@ -9,15 +9,15 @@ MIXING_MATRICES=(
     # "mixing_matrix_Roofnet_CIFAR10_BoydGreedy_1.pkl"
     # "mixing_matrix_Roofnet_CIFAR10_prim.pkl"
     # "mixing_matrix_Roofnet_CIFAR10_ring.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_SCA23_1.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_SCA23_2.pkl"
-    "mixing_matrix_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl"
+    "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SCA23_1.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SCA23_2.pkl"
+    # "mixing_matrix_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl"
     # "mixing_matrix_Roofnet_CIFAR10_SDRLambda2Ew_2.pkl"
-    "mixing_matrix_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
+    # "mixing_matrix_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
-GPUS=(0 1)
+GPUS=(0)
 
 # Ensure the GPUs array is not longer than the MIXING_MATRICES array
 if [ ${#GPUS[@]} -gt ${#MIXING_MATRICES[@]} ]; then
