@@ -1,23 +1,26 @@
 #!/bin/bash
 
 # Define the path to your Python script
-PYTHON_SCRIPT_PATH="newtest.py"
+PYTHON_SCRIPT_PATH="dpsgd_cifar_new.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    # "mixing_matrix_Roofnet_CIFAR10_clique.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_BoydGreedy_1.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_prim.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_ring.pkl"
-    "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SCA23_1.pkl"
-    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SCA23_2.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_SDRLambda2Ew_2.pkl"
-    # "mixing_matrix_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
+    "mixing_matrix_SMMD_PM_7T.pkl"
+    "mixing_matrix_SMMD_PM_8T.pkl"
+    "mixing_matrix_SMMD_PM_10T.pkl"
+    # "mixing_matrix_SMMD_SM_20T.pkl"
+    # "mixing_matrix_SMMD_SM_30T.pkl"
+    # "mixing_matrix_SMMD_SM_40T.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_clique.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_prim.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_ring.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SCA23_1.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl"
+    # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
-GPUS=(0)
+GPUS=(0 1 2)
 
 # Ensure the GPUs array is not longer than the MIXING_MATRICES array
 if [ ${#GPUS[@]} -gt ${#MIXING_MATRICES[@]} ]; then

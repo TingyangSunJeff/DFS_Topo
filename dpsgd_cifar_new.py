@@ -172,7 +172,6 @@ def main(mixing_matrix_path, output_file):
     # Load the mixing matrix from the provided pickle file.
     with open(mixing_matrix_path, "rb") as f:
         mixing_matrix = pickle.load(f)
-
     # Create tf.data datasets.
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
     train_dataset = train_dataset.shuffle(buffer_size=10000).batch(big_batch_size).prefetch(tf.data.AUTOTUNE)

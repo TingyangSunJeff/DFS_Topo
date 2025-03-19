@@ -9,13 +9,12 @@ import numpy as np
 
 # Define the file paths
 file_paths = [
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_BoydGreedy_1.pkl",
-    "saved_training_data_results/result_for_resnet_Roofnet_CIFAR10_clique.pkl"
+    "result_for_resnet_Roofnet_CIFAR10_clique.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_prim.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_ring.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl"
 ]
 
 
@@ -59,7 +58,7 @@ def plot_metrics(data_type, threshold, metrics_dict, ylabel, network_type, withi
     plt.ylabel(ylabel, fontsize=21)
     plt.legend(loc='best', fontsize=21)
     plt.grid(True)
-    save_path = os.path.join(os.getcwd(), 'graph_result', f'{ylabel}_{network_type}_{data_type}{withinfer}.{plot_mode}')
+    save_path = os.path.join(os.getcwd(), 'graph_result_new', f'{ylabel}_{network_type}_{data_type}{withinfer}.{plot_mode}')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     if plot_mode == "png":
         print(save_path)
@@ -98,7 +97,7 @@ def plot_metrics_time(metrics, ylabel, time_per_epoch, network_type, x_axis_limi
     plt.xscale('log') 
     plt.xlim(x_axis_limit)
     # Save the plot
-    save_path = os.path.join(os.getcwd(), 'graph_result_time', f'{ylabel}_over_time_{network_type}.{plot_mode}')
+    save_path = os.path.join(os.getcwd(), 'graph_result_time_new', f'{ylabel}_over_time_{network_type}.{plot_mode}')
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     if plot_mode == "png":
         print(save_path)
@@ -162,7 +161,7 @@ elif "MNIST" in file_paths[0]:
 else:
     data_type = "Unknown"
 
-plot_mode = "eps"
+plot_mode = "png"
 
 withinfer = ""
 threshold = 0.15 if data_type == "MNIST" else 0.001
@@ -201,7 +200,7 @@ for file_path in file_paths:
 # Plot the averaged training loss and test accuracy
 # print(all_avg_test_accuracy)
 # print(all_avg_train_loss)
-convergence_epochs = plot_metrics(data_type, threshold, all_avg_train_loss, 'Loss', network_type, withinfer, plot_mode)
+plot_metrics(data_type, threshold, all_avg_train_loss, 'Loss', network_type, withinfer, plot_mode)
 plot_metrics(data_type, threshold, all_avg_test_accuracy, 'Accuracy', network_type, withinfer, plot_mode)
 
 # Print convergence epochs
@@ -215,9 +214,9 @@ range_extension_factor = 1.2
 x_axis_limit = (min_start / range_extension_factor, max_time_without_overlay * range_extension_factor)
 
 # Plot for the case 'without overlay routing'
-plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
-plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
+# plot_metrics_time(all_avg_train_loss, 'Loss', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
+# plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_per_epoch_diction, f'{network_type}_{data_type}{withinfer}_without_overlay', x_axis_limit, plot_mode)
 
 # Plot for the case 'with overlay routing'
-plot_metrics_time(all_avg_train_loss, 'Loss', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
-plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
+# plot_metrics_time(all_avg_train_loss, 'Loss', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
+# plot_metrics_time(all_avg_test_accuracy, 'Accuracy', time_dict_with_route, f'{network_type}_{data_type}{withinfer}_with_overlay', x_axis_limit, plot_mode)
