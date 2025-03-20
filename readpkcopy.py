@@ -26,7 +26,7 @@ all_file_paths = [
 ]
 
 # Set the mode to either "SMMD_PM", "SMMD_SM", or "all"
-mode = "all"   # Change this value to choose the desired mode
+mode = "SMMD_SM"   # Change this value to choose the desired mode
 
 if mode == "SMMD_PM":
     file_paths = [fp for fp in all_file_paths if "SMMD_PM" in fp]
@@ -113,7 +113,7 @@ withinfer = ""
 data_type = "CIFAR10"
 network_type = "Roofnet"
 threshold = 0.15 if data_type == "MNIST" else 0.001
-epoch = 100 if data_type == "MNIST" else 80
+epoch = 100 if data_type == "MNIST" else 100
 model = "cnn" if data_type == "MNIST" else "resnet"
 
 # Update the categorized_results dictionary if needed
