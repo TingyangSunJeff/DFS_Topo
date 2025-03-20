@@ -16,13 +16,13 @@ all_file_paths = [
     # "result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
     # "result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
     # "result_for_resnet_SMMD_PM_3T.pkl",
-    "result_for_resnet_SMMD_PM_6T.pkl",
-    "result_for_resnet_SMMD_PM_7T.pkl",
-    "result_for_resnet_SMMD_PM_8T.pkl",
-    "result_for_resnet_SMMD_PM_9T.pkl",
+    "result_for_resnet_SMMD_PM_2T.pkl",
+    "result_for_resnet_SMMD_PM_3T.pkl",
+    "result_for_resnet_SMMD_PM_4T.pkl",
+    "result_for_resnet_SMMD_PM_5T.pkl",
     "result_for_resnet_SMMD_SM_20T.pkl",
-    "result_for_resnet_SMMD_SM_30T.pkl",
-    "result_for_resnet_SMMD_SM_40T.pkl"
+    "result_for_resnet_SMMD_SM_10T.pkl",
+    "result_for_resnet_SMMD_SM_30T.pkl"
 ]
 
 # Set the mode to either "SMMD_PM", "SMMD_SM", or "all"
@@ -192,12 +192,16 @@ time_dict_without_route = {
     'SMMD_PM_8T': 13107.18831,
     'SMMD_PM_7T': 11468.75517,
     'SMMD_PM_6T': 9830.275623,
+    'SMMD_PM_5T': 7698.478985,
+    'SMMD_PM_4T': 6553.523775,
+    'SMMD_PM_3T': 4915.165368,
+    'SMMD_PM_2T': 3276.78583,
     # SMMD_SM (without routing)
     'SMMD_SM_20T': 6553.582935,
     'SMMD_SM_15T': 4915.172324,
     'SMMD_SM_25T': 8191.968195,
     'SMMD_SM_30T': 9830.275996,
-    'SMMD_SM_40T': 13107.19127
+    'SMMD_SM_10T': 3276.790484
 }
 
 
@@ -222,12 +226,16 @@ time_dict_with_route = {
     'SMMD_PM_8T': 12013.79537,
     'SMMD_PM_7T': 10616.58283,
     'SMMD_PM_6T': 9181.554955,
+    'SMMD_PM_5T': 7698.478985,
+    'SMMD_PM_4T': 6241.41079,
+    'SMMD_PM_3T': 4594.954563,
+    'SMMD_PM_2T': 3181.357921,
     # SMMD_SM (with routing)
     'SMMD_SM_20T': 6220.816388,
     'SMMD_SM_15T': 4725.247485,
     'SMMD_SM_25T': 7631.366969,
     'SMMD_SM_30T': 9187.104194,
-    'SMMD_SM_40T': 12006.94951
+    'SMMD_SM_10T': 3181.359211
 }
 
 # Set the same x-axis range for both plots

@@ -26,10 +26,10 @@ def mat_to_pkl(mat_file, pkl_file, varname='W'):
 def main():
     # Hard-coded list of .mat files you want to convert
     mat_files = [
-        "mixing_matrix_SMMD_PM_7T.mat",
-        "mixing_matrix_SMMD_PM_8T.mat",
-        "mixing_matrix_SMMD_PM_10T.mat",
-        # "mixing_matrix_SMMD_SM_20T.mat",
+        "mixing_matrix_SMMD_PM_3T.mat",
+        # "mixing_matrix_SMMD_PM_4T.mat",
+        # "mixing_matrix_SMMD_PM_5T.mat",
+        # "mixing_matrix_SMMD_SM_10T.mat",
         # "mixing_matrix_SMMD_SM_30T.mat",
         # "mixing_matrix_SMMD_SM_40T.mat"
     ]

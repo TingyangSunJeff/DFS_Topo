@@ -5,10 +5,10 @@ PYTHON_SCRIPT_PATH="dpsgd_cifar_new.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    "mixing_matrix_SMMD_PM_7T.pkl"
-    "mixing_matrix_SMMD_PM_8T.pkl"
-    "mixing_matrix_SMMD_PM_10T.pkl"
-    # "mixing_matrix_SMMD_SM_20T.pkl"
+    "mixing_matrix_SMMD_PM_3T.pkl"
+    # "mixing_matrix_SMMD_PM_4T.pkl"
+    # "mixing_matrix_SMMD_PM_5T.pkl"
+    "mixing_matrix_SMMD_SM_10T.pkl"
     # "mixing_matrix_SMMD_SM_30T.pkl"
     # "mixing_matrix_SMMD_SM_40T.pkl"
     # "mixing_matrix/mixing_matrix_Roofnet_CIFAR10_clique.pkl"
@@ -20,7 +20,7 @@ MIXING_MATRICES=(
 )
 
 # Define an array with the GPU IDs you want to use
-GPUS=(0 1 2)
+GPUS=(0 1)
 
 # Ensure the GPUs array is not longer than the MIXING_MATRICES array
 if [ ${#GPUS[@]} -gt ${#MIXING_MATRICES[@]} ]; then
