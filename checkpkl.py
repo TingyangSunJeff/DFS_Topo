@@ -25,9 +25,7 @@ def print_numpy_arrays(data, indent=0):
     # If the data is a list or tuple, iterate over its elements
     elif isinstance(data, (list, tuple)):
         print(f"{prefix}Found {type(data).__name__} with {len(data)} elements:")
-        for i, item in enumerate(data):
-            print(f"{prefix}Index {i}:")
-            print_numpy_arrays(item, indent+4)
+        print(data)
     # Otherwise, print the type of the data (if desired)
     else:
         print(f"{prefix}Type: {type(data)} (not a NumPy array)")

@@ -9,24 +9,26 @@ import numpy as np
 
 # Define the file paths
 all_file_paths = [
-    "result_for_resnet_Roofnet_CIFAR10_clique.pkl",
+    # "result_for_resnet_Roofnet_CIFAR10_clique.pkl",
     "result_for_resnet_Roofnet_CIFAR10_prim.pkl",
     "result_for_resnet_Roofnet_CIFAR10_ring.pkl",
     "result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-    # "result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-    # "result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
+    "result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
     # "result_for_resnet_SMMD_PM_3T.pkl",
+    "result_for_resnet_SMMD_PM_1T.pkl",
     "result_for_resnet_SMMD_PM_2T.pkl",
-    "result_for_resnet_SMMD_PM_3T.pkl",
-    "result_for_resnet_SMMD_PM_4T.pkl",
-    "result_for_resnet_SMMD_PM_5T.pkl",
-    "result_for_resnet_SMMD_SM_20T.pkl",
+    # "result_for_resnet_SMMD_PM_3T.pkl",
+    # "result_for_resnet_SMMD_PM_4T.pkl",
+    # "result_for_resnet_SMMD_PM_5T.pkl",
+    "result_for_resnet_SMMD_SM_5T.pkl",
+    # "result_for_resnet_SMMD_SM_20T.pkl",
     "result_for_resnet_SMMD_SM_10T.pkl",
-    "result_for_resnet_SMMD_SM_30T.pkl"
+    # "result_for_resnet_SMMD_SM_30T.pkl"
 ]
 
 # Set the mode to either "SMMD_PM", "SMMD_SM", or "all"
-mode = "SMMD_SM"   # Change this value to choose the desired mode
+mode = "all"   # Change this value to choose the desired mode
 
 if mode == "SMMD_PM":
     file_paths = [fp for fp in all_file_paths if "SMMD_PM" in fp]
@@ -127,6 +129,7 @@ categorized_results = {
     'Prim': f'{network_type}_{data_type}_prim',
     'SMMD_SM_10T': 'SMMD_SM_10T',
     'SMMD_PM_10T': 'SMMD_PM_10T',
+    'SMMD_PM_1T': 'SMMD_PM_1T',
     'SMMD_PM_2T': 'SMMD_PM_2T',
     'SMMD_PM_3T': 'SMMD_PM_3T',
     'SMMD_PM_4T': 'SMMD_PM_4T',
@@ -135,6 +138,7 @@ categorized_results = {
     'SMMD_PM_7T': 'SMMD_PM_7T',
     'SMMD_PM_8T': 'SMMD_PM_8T',
     'SMMD_PM_9T': 'SMMD_PM_9T',
+    'SMMD_SM_5T': 'SMMD_SM_5T',
     'SMMD_SM_20T': 'SMMD_SM_20T',
     'SMMD_SM_30T': 'SMMD_SM_30T',
     'SMMD_SM_40T': 'SMMD_SM_40T',
@@ -145,10 +149,11 @@ categorized_results = {
 order = [
     'Clique', 'Ring', 'Prim', 
     'SCA', 
-    # 'Relaxation-rho', 'Relaxation-lambda', 'Greedy',
-    'SMMD_PM_2T', 'SMMD_PM_3T', 'SMMD_PM_4T', 'SMMD_PM_5T',
+    'Relaxation-rho', 'Relaxation-lambda', 
+    'Greedy',
+    'SMMD_PM_1T', 'SMMD_PM_2T', 'SMMD_PM_3T', 'SMMD_PM_4T', 'SMMD_PM_5T',
     'SMMD_PM_6T', 'SMMD_PM_7T', 'SMMD_PM_8T', 'SMMD_PM_9T', 'SMMD_PM_10T',
-    'SMMD_SM_10T', 'SMMD_SM_20T', 'SMMD_SM_30T', 'SMMD_SM_40T', 'SMMD_SM_45T'
+    'SMMD_SM_5T', 'SMMD_SM_10T', 'SMMD_SM_20T', 'SMMD_SM_30T', 'SMMD_SM_40T', 'SMMD_SM_45T'
 ]
 
 # Initialize dictionaries to store averaged metrics from each file
@@ -196,12 +201,14 @@ time_dict_without_route = {
     'SMMD_PM_4T': 6553.523775,
     'SMMD_PM_3T': 4915.165368,
     'SMMD_PM_2T': 3276.78583,
+    'SMMD_PM_1T': 1638.397705,
     # SMMD_SM (without routing)
     'SMMD_SM_20T': 6553.582935,
     'SMMD_SM_15T': 4915.172324,
     'SMMD_SM_25T': 8191.968195,
     'SMMD_SM_30T': 9830.275996,
-    'SMMD_SM_10T': 3276.790484
+    'SMMD_SM_10T': 3276.790484,
+    'SMMD_SM_5T': 1638.388454
 }
 
 
@@ -230,12 +237,14 @@ time_dict_with_route = {
     'SMMD_PM_4T': 6241.41079,
     'SMMD_PM_3T': 4594.954563,
     'SMMD_PM_2T': 3181.357921,
+    'SMMD_PM_1T': 1638.397705,
     # SMMD_SM (with routing)
     'SMMD_SM_20T': 6220.816388,
     'SMMD_SM_15T': 4725.247485,
     'SMMD_SM_25T': 7631.366969,
     'SMMD_SM_30T': 9187.104194,
-    'SMMD_SM_10T': 3181.359211
+    'SMMD_SM_10T': 3181.359211,
+    'SMMD_SM_5T': 1606.274502
 }
 
 # Set the same x-axis range for both plots
