@@ -9,23 +9,24 @@ import numpy as np
 
 # Define the file paths
 all_file_paths = [
-    # "result_for_resnet_Roofnet_CIFAR10_clique.pkl",
-    "result_for_resnet_Roofnet_CIFAR10_prim.pkl",
-    "result_for_resnet_Roofnet_CIFAR10_ring.pkl",
-    "result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
-    "result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
-    "result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
-    # "result_for_resnet_SMMD_PM_3T.pkl",
-    "result_for_resnet_SMMD_PM_1T.pkl",
-    "result_for_resnet_SMMD_PM_2T.pkl",
-    # "result_for_resnet_SMMD_PM_3T.pkl",
-    # "result_for_resnet_SMMD_PM_4T.pkl",
-    # "result_for_resnet_SMMD_PM_5T.pkl",
-    "result_for_resnet_SMMD_SM_5T.pkl",
-    # "result_for_resnet_SMMD_SM_20T.pkl",
-    "result_for_resnet_SMMD_SM_10T.pkl",
-    # "result_for_resnet_SMMD_SM_30T.pkl"
+    "new_result/result_for_resnet_Roofnet_CIFAR10_clique.pkl",
+    "new_result/result_for_resnet_Roofnet_CIFAR10_prim.pkl",
+    "new_result/result_for_resnet_Roofnet_CIFAR10_ring.pkl",
+    "new_result/result_for_resnet_Roofnet_CIFAR10_SCA23_1.pkl",
+    "new_result/result_for_resnet_Roofnet_CIFAR10_SDRLambda2Ew_1.pkl",
+    "new_result/result_for_resnet_Roofnet_CIFAR10_SDRRhoEw_1.pkl",
+    # "new_result/result_for_resnet_SMMD_PM_3T.pkl",
+    "new_result/result_for_resnet_SMMD_PM_1T.pkl",
+    "new_result/result_for_resnet_SMMD_PM_2T.pkl",
+    "new_result/result_for_resnet_SMMD_PM_3T.pkl",
+    # "new_result/result_for_resnet_SMMD_PM_4T.pkl",
+    # "new_result/result_for_resnet_SMMD_PM_5T.pkl",
+    "new_result/result_for_resnet_SMMD_SM_5T.pkl",
+    "new_result/result_for_resnet_SMMD_SM_15T.pkl",
+    "new_result/result_for_resnet_SMMD_SM_10T.pkl",
+    # "new_result/result_for_resnet_SMMD_SM_30T.pkl"
 ]
+
 
 # Set the mode to either "SMMD_PM", "SMMD_SM", or "all"
 mode = "all"   # Change this value to choose the desired mode
@@ -142,7 +143,7 @@ categorized_results = {
     'SMMD_SM_20T': 'SMMD_SM_20T',
     'SMMD_SM_30T': 'SMMD_SM_30T',
     'SMMD_SM_40T': 'SMMD_SM_40T',
-    'SMMD_SM_45T': 'SMMD_SM_45T'
+    'SMMD_SM_15T': 'SMMD_SM_15T'
 }
 
 
@@ -153,7 +154,7 @@ order = [
     'Greedy',
     'SMMD_PM_1T', 'SMMD_PM_2T', 'SMMD_PM_3T', 'SMMD_PM_4T', 'SMMD_PM_5T',
     'SMMD_PM_6T', 'SMMD_PM_7T', 'SMMD_PM_8T', 'SMMD_PM_9T', 'SMMD_PM_10T',
-    'SMMD_SM_5T', 'SMMD_SM_10T', 'SMMD_SM_20T', 'SMMD_SM_30T', 'SMMD_SM_40T', 'SMMD_SM_45T'
+    'SMMD_SM_5T', 'SMMD_SM_10T', 'SMMD_SM_20T', 'SMMD_SM_30T', 'SMMD_SM_40T', 'SMMD_SM_15T'
 ]
 
 # Initialize dictionaries to store averaged metrics from each file

@@ -166,7 +166,7 @@ def main(mixing_matrix_path, output_file):
     steps_per_epoch = x_train.shape[0] // big_batch_size
     lr_schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(
         boundaries=[30 * steps_per_epoch, 60 * steps_per_epoch],
-        values=[0.8, 0.08, 0.01]
+        values=[0.1, 0.05, 0.01]
     )
 
     # Load the mixing matrix from the provided pickle file.
