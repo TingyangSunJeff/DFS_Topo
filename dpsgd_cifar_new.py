@@ -7,6 +7,7 @@ import numpy as np
 import pickle
 import argparse
 import time
+import scipy.io
 
 def resnet_block(x, filters, strides=1, projection_shortcut=False):
     """A basic residual block for CIFAR-10 ResNet.
@@ -170,8 +171,19 @@ def main(mixing_matrix_path, output_file):
     )
 
     # Load the mixing matrix from the provided pickle file.
-    with open(mixing_matrix_path, "rb") as f:
-        mixing_matrix = pickle.load(f)
+    if mixing_matrix_path.endswith('.pkl'):
+        with open(mixing_matrix_path, "rb") as f:
+            mixing_matrix = pickle.load(f)
+    elif mixing_matrix_path.endswith('.mat'):
+        mat = scipy.io.loadmat(mixing_matrix_path)
+        # Filter out default keys like __header__, __version__, __globals__
+        valid_keys = [k for k in mat.keys() if not k.startswith('__')]
+        if not valid_keys:
+            raise ValueError("No valid matrix variable found in the .mat file.")
+        elif len(valid_keys) > 1:
+            print(f"Warning: Multiple variables found in the .mat file: {valid_keys}. Using '{valid_keys[0]}'.")
+        mixing_matrix = mat[valid_keys[0]]
+    
     # Create tf.data datasets.
     train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
     train_dataset = train_dataset.shuffle(buffer_size=10000).batch(big_batch_size).prefetch(tf.data.AUTOTUNE)
@@ -224,7 +236,8 @@ def main(mixing_matrix_path, output_file):
             metrics_history["test_accuracy"][i].append(test_acc_val)
             print(f"  Agent {i+1}: Train Loss: {train_loss_val:.4f}, Train Acc: {train_acc_val:.4f} | "
                   f"Test Loss: {test_loss_val:.4f}, Test Acc: {test_acc_val:.4f}")
-
+    noniidlevel = 0
+    output_file = output_file + f"_{noniidlevel}niid_schedule.pkl"
     # Save training history.
     with open(output_file, "wb") as f:
         pickle.dump(metrics_history, f)

@@ -1,167 +1,352 @@
+#!/usr/bin/env python3
 import tensorflow as tf
+from tensorflow.keras import layers, models, regularizers
 from tensorflow.keras.datasets import cifar10
-from tensorflow.keras.applications.resnet50 import ResNet50
-from tensorflow.keras.layers import Input, Flatten, Dense, Dropout
-from tensorflow.keras.models import Model
 from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.metrics import CategoricalAccuracy
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.optimizers import SGD
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.layers import BatchNormalization
-from tensorflow.keras.optimizers.schedules import ExponentialDecay
-from tensorflow.keras.optimizers.schedules import PiecewiseConstantDecay
-
-import time
 import numpy as np
 import pickle
 import argparse
-import json
+import time
+import random
+from collections import defaultdict
+from math import ceil
+import os
 
-def create_resnet50_cifar10():
-    input_tensor = Input(shape=(32, 32, 3))
-    base_model = ResNet50(include_top=False, weights=None, input_tensor=input_tensor, pooling='max')
-    x = Flatten()(base_model.output)
-    x = BatchNormalization()(x)
-    x = Dropout(0.5)(x)
-    output_tensor = Dense(10, activation='softmax', kernel_regularizer=l2(0.01))(x)  # Add L2 regularization
+# For loading .mat files if needed.
+import scipy.io
 
-    model = Model(inputs=input_tensor, outputs=output_tensor)
+# ------------------------------
+# New non-IID partitioning function using skewness degree
+# ------------------------------
+def getNonIID(x_train, y_train, sizes, seed, noniidlevel=0.6):
+    """
+    Partition CIFAR-10 training data into non-IID shards with controlled skewness.
+    
+    Args:
+      x_train: NumPy array of training images.
+      y_train: NumPy array of one-hot training labels.
+      sizes: List of desired sample counts per agent.
+      seed: Random seed for reproducibility.
+      noniidlevel: Fraction (0 to 1) of data to assign from the major label (e.g., 0.6 means 60% from major label).
+    
+    Returns:
+      partitions: A list (length = num_agents) of lists of indices corresponding to the assigned samples.
+    """
+    # Convert one-hot labels to integer labels.
+    labelList = np.argmax(y_train, axis=1)
+    rng = random.Random(seed)
+    
+    # Group indices by label.
+    labelIdxDict = defaultdict(list)
+    for idx, label in enumerate(labelList):
+        labelIdxDict[label].append(idx)
+    
+    labelNum = len(labelIdxDict)
+    num_agents = len(sizes)
+    # print(f"Number of labels: {labelNum}, Number of agents: {num_agents}")
+    
+    # Initialize partitions for each agent.
+    partitions = [list() for _ in range(num_agents)]
+    major_label_ratio = noniidlevel  # e.g., 0.6 means 60% of data comes from the major label.
+    
+    # Divide each label's indices into subsets.
+    subsets_per_label = ceil(num_agents / labelNum)
+    label_subsets = {label: [] for label in labelIdxDict}
+    
+    for label, indices in labelIdxDict.items():
+        rng.shuffle(indices)
+        subset_size = len(indices) // subsets_per_label
+        for i in range(subsets_per_label):
+            start_idx = i * subset_size
+            # Ensure the last subset takes all remaining indices.
+            end_idx = (i + 1) * subset_size if i < subsets_per_label - 1 else len(indices)
+            label_subsets[label].append(indices[start_idx:end_idx])
+    
+    # Assign each agent a major label and add major label data.
+    agent_to_major_labels = {}
+    for agent in range(num_agents):
+        major_label = agent % labelNum  # round-robin assignment
+        agent_to_major_labels[agent] = major_label
+        subset_idx = agent // labelNum  # which subset of this label to use
+        major_data = label_subsets[major_label][subset_idx]
+        major_data_len = int(major_label_ratio * len(major_data))
+        partitions[agent].extend(major_data[:major_data_len])
+    
+    # Collect remaining data from each label.
+    remaining_data = []
+    for label, subsets in label_subsets.items():
+        for subset in subsets:
+            # Add the remainder from each subset.
+            remaining_data.extend(subset[int(major_label_ratio * len(subset)):])
+    rng.shuffle(remaining_data)
+    
+    # Distribute remaining data uniformly to each agent.
+    for agent in range(num_agents):
+        # Calculate how many additional samples this agent needs.
+        needed = sizes[agent] - len(partitions[agent])
+        partitions[agent].extend(remaining_data[:needed])
+        remaining_data = remaining_data[needed:]
+        rng.shuffle(partitions[agent])
+    
+    return partitions
+
+# ------------------------------
+# Model and training utilities
+# ------------------------------
+def resnet_block(x, filters, strides=1, projection_shortcut=False):
+    """A basic residual block for CIFAR-10 ResNet.
+    
+    Args:
+      x: Input tensor.
+      filters: Number of filters for the convolutions.
+      strides: Stride for the first convolution.
+      projection_shortcut: If True, use a convolution shortcut to match dimensions.
+    
+    Returns:
+      Output tensor after applying the block.
+    """
+    shortcut = x
+    # First convolutional layer
+    x = layers.Conv2D(filters, kernel_size=3, strides=strides, padding='same',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=regularizers.l2(1e-4))(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation('relu')(x)
+    
+    # Second convolutional layer
+    x = layers.Conv2D(filters, kernel_size=3, strides=1, padding='same',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=regularizers.l2(1e-4))(x)
+    x = layers.BatchNormalization()(x)
+    
+    # If dimensions differ, use a projection shortcut.
+    if projection_shortcut:
+        shortcut = layers.Conv2D(filters, kernel_size=1, strides=strides,
+                                 kernel_initializer='he_normal',
+                                 kernel_regularizer=regularizers.l2(1e-4))(shortcut)
+        shortcut = layers.BatchNormalization()(shortcut)
+    
+    # Add the shortcut connection and apply ReLU.
+    x = layers.Add()([x, shortcut])
+    x = layers.Activation('relu')(x)
+    return x
+
+def create_resnet56_model(input_shape=(32, 32, 3), num_classes=10):
+    """
+    Creates a ResNet-56 model for CIFAR-10.
+
+    The architecture follows:
+      - An initial 3x3 conv with 16 filters.
+      - 3 stages of residual blocks:
+          * Stage 1: 9 blocks with 16 filters (no downsampling).
+          * Stage 2: 9 blocks with 32 filters (the first block downsamples).
+          * Stage 3: 9 blocks with 64 filters (the first block downsamples).
+      - Global average pooling and a final dense layer.
+    
+    Args:
+      input_shape: Input shape of images.
+      num_classes: Number of output classes.
+    
+    Returns:
+      A Keras Model instance representing ResNet-56.
+    """
+    inputs = layers.Input(shape=input_shape)
+    # Initial conv layer.
+    x = layers.Conv2D(16, kernel_size=3, strides=1, padding='same',
+                      kernel_initializer='he_normal',
+                      kernel_regularizer=regularizers.l2(1e-4))(inputs)
+    x = layers.BatchNormalization()(x)
+    x = layers.Activation('relu')(x)
+    
+    # Stage 1: 9 residual blocks with 16 filters.
+    for _ in range(9):
+        x = resnet_block(x, filters=16, strides=1, projection_shortcut=False)
+    
+    # Stage 2: 9 residual blocks with 32 filters; first block downsamples.
+    x = resnet_block(x, filters=32, strides=2, projection_shortcut=True)
+    for _ in range(8):
+        x = resnet_block(x, filters=32, strides=1, projection_shortcut=False)
+    
+    # Stage 3: 9 residual blocks with 64 filters; first block downsamples.
+    x = resnet_block(x, filters=64, strides=2, projection_shortcut=True)
+    for _ in range(8):
+        x = resnet_block(x, filters=64, strides=1, projection_shortcut=False)
+    
+    # Global average pooling and classification layer.
+    x = layers.GlobalAveragePooling2D()(x)
+    outputs = layers.Dense(num_classes, activation='softmax',
+                           kernel_initializer='he_normal')(x)
+    
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
     return model
 
-@tf.function
-def test_step_dpsgd(test_images, test_labels, models, loss_fn, test_losses, test_accuracies):
-    for i, model in enumerate(models):
-        predictions = model(test_images, training=False)
-        loss = loss_fn(test_labels, predictions)
-        test_losses[i].update_state(loss)
-        test_accuracies[i].update_state(test_labels, predictions)
 
+# Modified training step to work with zipped per-agent batches.
 @tf.function
-def train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies):
-    # Split the big batch into smaller batches for each agent
-    batch_size_per_agent = tf.shape(big_batch_images)[0] // len(models)
-    for i, model in enumerate(models):
-        start = i * batch_size_per_agent
-        end = start + batch_size_per_agent
-        images = big_batch_images[start:end]
-        labels = big_batch_labels[start:end]
-
+def train_step_dpsgd(agent_batches, models_list, mixing_matrix,
+                     optimizers, loss_fn, train_loss_metrics, train_accuracy_metrics):
+    num_agents = len(models_list)
+    for i in range(num_agents):
+        images, labels = agent_batches[i]
         with tf.GradientTape() as tape:
-            predictions = model(images, training=True)
+            predictions = models_list[i](images, training=True)
             loss = loss_fn(labels, predictions)
-        gradients = tape.gradient(loss, model.trainable_variables)
-        optimizers[i].apply_gradients(zip(gradients, model.trainable_variables))
-        train_losses[i].update_state(loss)
-        train_accuracies[i].update_state(labels, predictions)
-
-    # Simulate D-PSGD parameter aggregation after each training step
-    aggregate_parameters(models, mixing_matrix)
+        gradients = tape.gradient(loss, models_list[i].trainable_variables)
+        optimizers[i].apply_gradients(zip(gradients, models_list[i].trainable_variables))
+        train_loss_metrics[i].update_state(loss)
+        train_accuracy_metrics[i].update_state(labels, predictions)
+    
+    # Aggregate parameters across agents.
+    aggregate_parameters(models_list, mixing_matrix)
 
 @tf.function
-def aggregate_parameters(models, mixing_matrix):
-    num_agents = len(models)
-    for var_idx in range(len(models[0].trainable_variables)):
-        # Extract the variable from all models to form a list
-        vars_to_aggregate = [model.trainable_variables[var_idx] for model in models]
-        # Stack the variables along a new dimension to make them a single tensor
-        stacked_vars = tf.stack(vars_to_aggregate, axis=0)
-        mixing_matrix_float32 = tf.cast(mixing_matrix, tf.float32)
-        weighted_vars = tf.tensordot(mixing_matrix_float32, stacked_vars, axes=[[1], [0]])
-        
-        # Assign the weighted sum back to each model's variable
-        for i, model in enumerate(models):
-            model.trainable_variables[var_idx].assign(weighted_vars[i])
+def test_step(models_list, images, labels, loss_fn, test_loss_metrics, test_accuracy_metrics):
+    num_agents = len(models_list)
+    for i in range(num_agents):
+        predictions = models_list[i](images, training=False)
+        loss = loss_fn(labels, predictions)
+        test_loss_metrics[i].update_state(loss)
+        test_accuracy_metrics[i].update_state(labels, predictions)
 
+@tf.function
+def aggregate_parameters(models_list, mixing_matrix):
+    num_agents = len(models_list)
+    for var_idx in range(len(models_list[0].trainable_variables)):
+        var_list = [model.trainable_variables[var_idx] for model in models_list]
+        stacked_vars = tf.stack(var_list, axis=0)
+        mixing_matrix_float = tf.cast(mixing_matrix, tf.float32)
+        aggregated_vars = tf.tensordot(mixing_matrix_float, stacked_vars, axes=[[1], [0]])
+        for i, model in enumerate(models_list):
+            model.trainable_variables[var_idx].assign(aggregated_vars[i])
 
-def main(mixing_matrix_path, output_file):
-    # Load CIFAR-10 data
-    with open('./network_settings.json', 'r') as json_file:
-        loaded_network_settings = json.load(json_file) 
-    (train_images, train_labels), (test_images, test_labels) = cifar10.load_data()
-    print("=========", mixing_matrix_path)
-    # Normalize pixel values
-    train_images, test_images = train_images / 255.0, test_images / 255.0
-
-    # Convert labels to one-hot encoding
-    train_labels = to_categorical(train_labels, 10)
-    test_labels = to_categorical(test_labels, 10)
-    # datagen = ImageDataGenerator(
-    #     rotation_range=15,
-    #     width_shift_range=0.1,
-    #     height_shift_range=0.1,
-    #     horizontal_flip=True,
-    #     zoom_range=0.2
-    # )
-    num_agents = 10
-    big_batch_size = 64 * num_agents
-    # train_dataset = datagen.flow(train_images, train_labels, batch_size=big_batch_size)
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
-    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(big_batch_size).prefetch(tf.data.AUTOTUNE).cache()
-    test_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
-    test_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
-    # Open the file in binary read mode
-    with open(mixing_matrix_path, 'rb') as file:
-        # Load the content of the file into a Python object
-        mixing_matrix = pickle.load(file)
-    print(mixing_matrix)
-    epochs = 50
-    num_agents = 10
-    # Loss function
-    loss_fn = tf.keras.losses.CategoricalCrossentropy()
-    models = [create_resnet50_cifar10() for _ in range(num_agents)]
-
+# ------------------------------
+# Main training function
+# ------------------------------
+def main(mixing_matrix_path, output_file, seed=42, noniidlevel=0):
+    # Load CIFAR-10 data.
+    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    x_train = x_train.astype("float32") / 255.0
+    x_test = x_test.astype("float32") / 255.0
+    y_train = to_categorical(y_train, 10)
+    y_test = to_categorical(y_test, 10)
     
-    # Set initial learning rate
-    # initial_learning_rate = 0.8
+    # Hyperparameters.
+    num_agents = 10
+    per_agent_batch_size = 64  # Each agent gets a batch of 64
+    epochs = 300
 
-    # Define the boundaries of epochs where the learning rate changes
-    # Assuming one step is one epoch
-    # boundaries = [30, 45]
-    # values = [initial_learning_rate, initial_learning_rate / 10, initial_learning_rate / 100]
-    # lr_schedule = PiecewiseConstantDecay(boundaries, values)
-
-    # optimizers = [tf.keras.optimizers.Adam(learning_rate=0.001) for _ in range(num_agents)]
-    optimizers = [SGD(learning_rate=0.02) for _ in range(num_agents)]
-    # optimizers = [SGD(learning_rate=lr_schedule, momentum=0.9, nesterov=True) for _ in range(num_agents)]
-    train_losses = [tf.keras.metrics.Mean() for _ in range(num_agents)]
-    train_accuracies = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
+    # Load the mixing matrix. both pkl mat works.
+    # if mixing_matrix_path.endswith('.pkl'):
+    with open(mixing_matrix_path, "rb") as f:
+        mixing_matrix = pickle.load(f)
+    # elif mixing_matrix_path.endswith('.mat'):
+    #     mat = scipy.io.loadmat(mixing_matrix_path)
+    #     # Filter out default keys like __header__, __version__, __globals__
+    #     valid_keys = [k for k in mat.keys() if not k.startswith('__')]
+    #     if not valid_keys:
+    #         raise ValueError("No valid matrix variable found in the .mat file.")
+    #     elif len(valid_keys) > 1:
+    #         print(f"Warning: Multiple variables found in the .mat file: {valid_keys}. Using '{valid_keys[0]}'.")
+    #     mixing_matrix = mat[valid_keys[0]]
+    
+    # Determine desired sizes for each agent's local dataset.
+    total_samples = x_train.shape[0]
+    # Here, we split the training set evenly among agents.
+    sizes = [total_samples // num_agents] * num_agents
+    
+    # Partition the training data using the new non-IID function.
+    partitions = getNonIID(x_train, y_train, sizes, seed, noniidlevel=noniidlevel)
+    
+    # Create a dataset for each agent using the partition indices.
+    shards_x, shards_y = [], []
+    for i in range(num_agents):
+        indices = partitions[i]
+        agent_imgs = x_train[indices]
+        agent_labels = y_train[indices]
+        shards_x.append(agent_imgs)
+        shards_y.append(agent_labels)
+    
+    # Create a tf.data.Dataset for each agent.
+    agent_datasets = []
+    for i in range(num_agents):
+        ds = tf.data.Dataset.from_tensor_slices((shards_x[i], shards_y[i]))
+        ds = ds.shuffle(buffer_size=10000).batch(per_agent_batch_size).prefetch(tf.data.AUTOTUNE)
+        agent_datasets.append(ds)
+    # Zip the datasets so that each training step yields a tuple of batches (one per agent).
+    train_dataset = tf.data.Dataset.zip(tuple(agent_datasets))
+    
+    # Create a test dataset (using the full test set for evaluation)
+    test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+    test_dataset = test_dataset.batch(per_agent_batch_size * num_agents).prefetch(tf.data.AUTOTUNE)
+    
+    # Create models and optimizers for each agent.
+    models_list = [create_resnet56_model() for _ in range(num_agents)]
+    # Define a learning rate schedule.
+    lr_schedule = tf.keras.optimizers.schedules.PiecewiseConstantDecay(
+        boundaries=[150, 225],
+        values=[0.1, 0.01, 0.001]
+    )
+    constant_lr = 0.1
+    optimizers = [tf.keras.optimizers.SGD(learning_rate=lr_schedule, momentum=0.9, nesterov=True)
+                  for _ in range(num_agents)]
+    
+    loss_fn = tf.keras.losses.CategoricalCrossentropy()
+    
+    # Create metrics for each agent.
+    train_loss_metrics = [tf.keras.metrics.Mean() for _ in range(num_agents)]
+    train_accuracy_metrics = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
+    test_loss_metrics = [tf.keras.metrics.Mean() for _ in range(num_agents)]
+    test_accuracy_metrics = [tf.keras.metrics.CategoricalAccuracy() for _ in range(num_agents)]
+    
     metrics_history = {
-        'train_loss': [[] for _ in range(num_agents)],
-        'train_accuracy': [[] for _ in range(num_agents)],
-        'test_accuracy': [[] for _ in range(num_agents)]
+        "train_loss": [[] for _ in range(num_agents)],
+        "train_accuracy": [[] for _ in range(num_agents)],
+        "test_loss": [[] for _ in range(num_agents)],
+        "test_accuracy": [[] for _ in range(num_agents)],
+        "compute_time": 0
     }
-
-    # steps_per_epoch = len(train_images) // big_batch_size
+    compute_time = 0
+    # Main training loop.
     for epoch in range(epochs):
-        # Training loop for one epoch
-        for train_loss, train_accuracy, test_loss, test_accuracy in zip(train_losses, train_accuracies, test_losses, test_accuracies):
-            train_loss.reset_states()
-            train_accuracy.reset_states()
-            test_loss.reset_states()
-            test_accuracy.reset_states()
         start_time = time.time()
-        for big_batch_images, big_batch_labels in train_dataset:
-            # big_batch_images, big_batch_labels = next(datagen.flow(train_images, train_labels, batch_size=big_batch_size))
-            train_step_dpsgd(big_batch_images, big_batch_labels, models, mixing_matrix, optimizers, loss_fn, train_losses, train_accuracies)
-        for test_batch_images, test_batch_labels in test_dataset:
-            test_step_dpsgd(test_batch_images, test_batch_labels, models, loss_fn, test_losses, test_accuracies)
-        end_time = time.time()
-        # Print training loss and accuracy
+        # Reset metrics.
+        for metric in train_loss_metrics + train_accuracy_metrics + test_loss_metrics + test_accuracy_metrics:
+            metric.reset_states()
+        
+        # Iterate over the zipped training dataset.
+        for agent_batches in train_dataset:
+            # Each agent_batches is a tuple: ( (agent0_images, agent0_labels),
+            #                                   (agent1_images, agent1_labels), ... )
+            train_step_dpsgd(agent_batches, models_list, mixing_matrix,
+                             optimizers, loss_fn, train_loss_metrics, train_accuracy_metrics)
+        
+        # Evaluate on the global test set.
+        for test_images, test_labels in test_dataset:
+            test_step(models_list, test_images, test_labels, loss_fn, test_loss_metrics, test_accuracy_metrics)
+        
+        epoch_time = time.time() - start_time
+        compute_time += epoch_time
+        print(f"Epoch {epoch+1} - Time: {epoch_time:.2f}s")
         for i in range(num_agents):
-            metrics_history['train_loss'][i].append(train_losses[i].result().numpy())
-            metrics_history['train_accuracy'][i].append(train_accuracies[i].result().numpy())
-            metrics_history['test_accuracy'][i].append(test_accuracies[i].result().numpy())
-            print(f"Epoch:{epoch+1} - Model {i+1} - Loss: {train_losses[i].result().numpy()}, Accuracy: {test_accuracies[i].result().numpy()}, Time: {end_time - start_time:.2f}s")
-
-    with open(output_file, 'wb') as file:
-        pickle.dump(metrics_history, file)
-
+            train_loss_val = train_loss_metrics[i].result().numpy()
+            train_acc_val = train_accuracy_metrics[i].result().numpy()
+            test_loss_val = test_loss_metrics[i].result().numpy()
+            test_acc_val = test_accuracy_metrics[i].result().numpy()
+            metrics_history["train_loss"][i].append(train_loss_val)
+            metrics_history["train_accuracy"][i].append(train_acc_val)
+            metrics_history["test_loss"][i].append(test_loss_val)
+            metrics_history["test_accuracy"][i].append(test_acc_val)
+            print(f"  Agent {i+1}: Train Loss: {train_loss_val:.4f}, Train Acc: {train_acc_val:.4f} | "
+                  f"Test Loss: {test_loss_val:.4f}, Test Acc: {test_acc_val:.4f}")
+    metrics_history["compute_time"] = compute_time
+    output_file = output_file + f"_{noniidlevel}niid_schedule.pkl"
+    # Save the training history.
+    with open(output_file, "wb") as f:
+        pickle.dump(metrics_history, f)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Train a model with a specified mixing matrix.')
-    parser.add_argument('mixing_matrix_path', type=str, help='Path to the mixing matrix file.')
-    parser.add_argument('output_file', type=str, help='Output file for saving the results.')
-    
+    parser = argparse.ArgumentParser(description="DPSGD Training with ResNet20 on CIFAR-10 using non-IID partitioning with controlled skewness")
+    parser.add_argument("mixing_matrix_path", type=str, help="Path to the mixing matrix file (pickle format)")
+    parser.add_argument("output_file", type=str, help="Output file to save training metrics (pickle format)")
     args = parser.parse_args()
     main(args.mixing_matrix_path, args.output_file)

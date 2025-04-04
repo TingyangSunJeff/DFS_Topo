@@ -26,21 +26,22 @@ def mat_to_pkl(mat_file, pkl_file, varname='W'):
 def main():
     # Hard-coded list of .mat files you want to convert
     mat_files = [
-        # "mixing_matrix_SMMD_PM_1T.mat",
-        # "mixing_matrix_SMMD_PM_4T.mat",
-        # "mixing_matrix_SMMD_PM_5T.mat",
-        "mixing_matrix_SMMD_SM_15T.mat",
-        # "mixing_matrix_SMMD_SM_30T.mat",
-        # "mixing_matrix_SMMD_SM_40T.mat"
+        "mixing_matrix_SCA.mat",
+        "mixing_matrix_Ring.mat",
+        "mixing_matrix_SMMD_SM.mat"
     ]
     
     for mat_file in mat_files:
         # Derive a .pkl file name from the .mat file
         base_name = os.path.splitext(mat_file)[0]
         pkl_file = f"{base_name}.pkl"
-        
+        varname = ""
+        if "SMMD_SM" not in base_name:
+            varname = "W"
+        else:
+            varname = "W_SDP"
         # Convert the .mat file to .pkl
-        mat_to_pkl(mat_file, pkl_file, varname='W_SDP')
+        mat_to_pkl(mat_file, pkl_file, varname=varname)
 
 if __name__ == '__main__':
     main()
