@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Define the path to your Python script
-PYTHON_SCRIPT_PATH="dpsgd_cifar_new.py"
+PYTHON_SCRIPT_PATH="dpsgd_cifar_resnet.py"
 
 # Define an array with the paths of your mixing matrices
 MIXING_MATRICES=(
-    "mixing_matrix_MST.mat"
-    "mixing_matrix_Clique.mat"
-    # "mixing_matrix_Ring.pkl"
-    # "mixing_matrix_SCA.pkl"
-    # "mixing_matrix_SMMD_SM.pkl"
+    # "Roofnet_mixing_matrix_Clique.pkl"
+    # "Roofnet_mixing_matrix_MST.pkl"
+    # "Roofnet_mixing_matrix_Ring.pkl"
+    "Roofnet_mixing_matrix_SCA.pkl"
+    "Roofnet_mixing_matrix_SMMD_SM.pkl"
 )
 
 # Define an array with the GPU IDs you want to use
